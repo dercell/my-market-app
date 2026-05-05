@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: my-market-app
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/my_market_db}
+    username: ${DB_USER:yp_user}
+    password: ${DB_PASSWORD:yp_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
