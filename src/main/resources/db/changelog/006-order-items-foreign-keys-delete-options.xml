@@ -12,21 +12,23 @@
                 <tableExists tableName="items"/>
             </and>
         </preConditions>
+
+        <dropForeignKeyConstraint baseTableName="order_items" constraintName="fk_orders_id"/>
+
         <addForeignKeyConstraint
                 baseTableName="order_items"
                 baseColumnNames="order_id"
                 constraintName="fk_orders_id"
                 referencedTableName="orders"
-                referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                baseTableName="order_items"
-                baseColumnNames="item_id"
-                constraintName="fk_items_id"
-                referencedTableName="items"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
         <rollback>
-            <dropForeignKeyConstraint baseTableName="order_items" constraintName="fk_orders_id"/>
-            <dropForeignKeyConstraint baseTableName="order_items" constraintName="fk_items_id"/>
+            <addForeignKeyConstraint
+                    baseTableName="order_items"
+                    baseColumnNames="order_id"
+                    constraintName="fk_orders_id"
+                    referencedTableName="orders"
+                    referencedColumnNames="id"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>

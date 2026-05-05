@@ -9,4 +9,5 @@
     <include file="003-orders-table.xml" relativeToChangelogFile="true"/>
     <include file="004-order-items-table.xml" relativeToChangelogFile="true"/>
     <include file="005-order-items-foreign-keys.xml" relativeToChangelogFile="true"/>
+    <include file="006-order-items-foreign-keys-delete-options.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
