@@ -4,5 +4,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
-
+    <include file="001-items-table.xml" relativeToChangelogFile="true"/>
+    <include file="002-items-idx.xml" relativeToChangelogFile="true"/>
+    <include file="003-orders-table.xml" relativeToChangelogFile="true"/>
+    <include file="004-order-items-table.xml" relativeToChangelogFile="true"/>
+    <include file="005-order-items-foreign-keys.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
