@@ -10,4 +10,9 @@
     <include file="004-order-items-table.xml" relativeToChangelogFile="true"/>
     <include file="005-order-items-foreign-keys.xml" relativeToChangelogFile="true"/>
     <include file="006-order-items-foreign-keys-delete-options.xml" relativeToChangelogFile="true"/>
+    <include file="007-cart-table.xml" relativeToChangelogFile="true"/>
+    <include file="008-cart-foreign-keys.xml" relativeToChangelogFile="true"/>
+    <include file="009-cart-item-id-unique.xml" relativeToChangelogFile="true"/>
+    <include file="010-order-delete-status-col.xml" relativeToChangelogFile="true"/>
+    <include file="011-init-item-data.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
