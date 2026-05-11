@@ -21,15 +21,15 @@ public class ItemController {
     public String getItemPage(
             @RequestParam(value = "search", defaultValue = "") String search,
             @RequestParam(value = "sort", defaultValue = "NO") String sort,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
             @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
             Model model) {
 
         ItemPageDto itemPageDto = itemService.getItemsPage(search, pageNumber, pageSize, sort);
 
         model.addAttribute("items", itemPageDto.items());
-        model.addAttribute("search", search);
-        model.addAttribute("sort", sort);
+        model.addAttribute("search", itemPageDto.search());
+        model.addAttribute("sort", itemPageDto.sort());
         model.addAttribute("paging", itemPageDto.paging());
 
         return "items";

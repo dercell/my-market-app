@@ -36,17 +36,6 @@
                 </div>
             </div>
 
-            <div class="card mt-4 border-0">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">Полный Stack Trace
-                        <button class="btn btn-sm btn-link p-0 float-end" onclick="toggleStack()">[-]</button>
-                    </h6>
-                </div>
-                <div class="card-body p-0 stack-collapsed">
-                    <pre class="m-0 p-3 small bg-dark text-white" th:text="${#vars.exception.printStackTrace()}">stack trace</pre>
-                </div>
-            </div>
-
             <!-- Кнопки -->
             <div class="text-center mt-5">
                 <a href="/items" class="btn btn-secondary bi bi-arrow-left-square">Главная</a>
@@ -54,13 +43,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    function toggleStack() {
-        const stack = document.querySelector('.stack-collapsed');
-        stack.classList.toggle('stack-collapsed');
-    }
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"

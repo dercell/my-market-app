@@ -58,7 +58,6 @@ public class CartService {
                 cartItem.setItem(null);
                 cartRepository.delete(cartItem);
             }
-
         }
 
         return this.getCart();

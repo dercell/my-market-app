@@ -37,7 +37,7 @@ public class ItemService {
                 .toList();
 
         PageDto paging = new PageDto(pageNumber, pageSize, pageItems.hasPrevious(), pageItems.hasNext());
-        return new ItemPageDto(cutItems(itemDtos), search, paging);
+        return new ItemPageDto(cutItems(itemDtos), search, sort, paging);
     }
 
     public Optional<ItemDto> getItem(Long id) {

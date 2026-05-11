@@ -55,14 +55,12 @@ public class OrderService {
         return savedOrder.getId();
     }
 
-    public OrderPageDto getOrderInfo(Order order) {
+    private OrderPageDto getOrderInfo(Order order) {
         List<ItemDto> cartItems = new ArrayList<>();
-        long totalSum = 0L;
         for (OrderItems orderItem : order.getOrderItems()) {
             Item cartItem = orderItem.getItem();
             cartItems.add(ItemMapper.toDto(cartItem, orderItem.getCount()));
-            totalSum += cartItem.getPrice() * orderItem.getCount();
         }
-        return new OrderPageDto(order.getId(), cartItems, totalSum);
+        return new OrderPageDto(order.getId(), cartItems, order.getTotalSum());
     }
 }
