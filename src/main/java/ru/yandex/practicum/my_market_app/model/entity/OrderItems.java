@@ -1,4 +1,4 @@
-package ru.yandex.practicum.my_market_app.model;
+package ru.yandex.practicum.my_market_app.model.entity;
 
 
 import jakarta.persistence.*;
@@ -18,7 +18,7 @@ public class OrderItems {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 

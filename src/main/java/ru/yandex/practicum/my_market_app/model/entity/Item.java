@@ -1,10 +1,7 @@
-package ru.yandex.practicum.my_market_app.model;
+package ru.yandex.practicum.my_market_app.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Entity
@@ -31,5 +28,8 @@ public class Item {
 
     @Column
     private String imgPath;
+
+    @OneToOne(mappedBy = "item")
+    private CartItem cartItem;
 
 }

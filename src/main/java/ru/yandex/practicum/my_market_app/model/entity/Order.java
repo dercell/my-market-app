@@ -1,8 +1,10 @@
-package ru.yandex.practicum.my_market_app.model;
+package ru.yandex.practicum.my_market_app.model.entity;
 
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -18,11 +20,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String status;
-
     @Column(name = "total_sum")
     private Long totalSum;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItems> orderItems;
 
 }
