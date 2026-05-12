@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("view")
@@ -49,7 +50,7 @@ class ItemDetailControllerTest {
         when(itemService.getItem(1L)).thenReturn(itemDto);
         doNothing().when(itemService).changeItemAmount(1L, "PLUS");
 
-        mockMvc.perform(get("/items/{id}", 1L)
+        mockMvc.perform(post("/items/{id}", 1L)
                         .param("action", "PLUS"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("item"))

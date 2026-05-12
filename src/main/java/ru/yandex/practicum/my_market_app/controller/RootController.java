@@ -19,7 +19,7 @@ public class RootController {
     public String itemPageRedirect(
             @RequestParam(value = "search", defaultValue = "") String search,
             @RequestParam(value = "sort", defaultValue = "NO") String sort,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
             @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber
     ) {
 
