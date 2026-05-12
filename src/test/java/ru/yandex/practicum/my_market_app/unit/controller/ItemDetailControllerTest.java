@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Tag("view")
+@Tag("controller")
 @Tag("unit")
 @WebMvcTest(ItemDetailController.class)
 class ItemDetailControllerTest {
