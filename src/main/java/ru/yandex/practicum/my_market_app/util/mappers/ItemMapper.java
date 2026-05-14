@@ -3,12 +3,10 @@ package ru.yandex.practicum.my_market_app.util.mappers;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.my_market_app.model.entity.Item;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 
 
-@Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 

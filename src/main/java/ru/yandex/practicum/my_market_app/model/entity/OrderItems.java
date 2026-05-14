@@ -4,10 +4,12 @@ package ru.yandex.practicum.my_market_app.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Data
+
 @Entity
 @Builder
-@EqualsAndHashCode
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "order_items")
@@ -15,6 +17,7 @@ public class OrderItems {
 
     @Id
     @Column
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

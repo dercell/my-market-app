@@ -6,10 +6,12 @@ import lombok.*;
 
 import java.util.List;
 
-@Data
+
 @Entity
 @Builder
-@EqualsAndHashCode
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "orders")
@@ -17,6 +19,7 @@ public class Order {
 
     @Id
     @Column
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
