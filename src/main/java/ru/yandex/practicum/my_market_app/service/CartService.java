@@ -12,6 +12,7 @@ import ru.yandex.practicum.my_market_app.repository.ItemRepository;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -37,7 +38,7 @@ public class CartService {
 
     @Transactional
     public CartPageDto changeItemAmount(Long itemId, String action) {
-        List<CartItem> cartItemList = cartRepository.getCartItemByItem_Id(itemId);
+        Optional<CartItem> cartItemList = cartRepository.getCartItemByItem_Id(itemId);
 
         if (cartItemList.isEmpty()) {
             if ("PLUS".equalsIgnoreCase(action)) {
@@ -46,7 +47,7 @@ public class CartService {
                 cartRepository.save(newItem);
             }
         } else {
-            CartItem cartItem = cartItemList.getFirst();
+            CartItem cartItem = cartItemList.get();
             if ("PLUS".equalsIgnoreCase(action)) {
                 cartItem.addOne();
                 cartRepository.save(cartItem);
@@ -54,8 +55,6 @@ public class CartService {
                 cartItem.delOne();
                 cartRepository.save(cartItem);
             } else {
-                cartItem.getItem().setCartItem(null);
-                cartItem.setItem(null);
                 cartRepository.delete(cartItem);
             }
         }
@@ -68,12 +67,11 @@ public class CartService {
         List<CartItem> cartItems = cartRepository.findAll();
         Long newOrderId = orderService.buy(cartItems);
 
-        cartItems.forEach(cartItem -> {
-            cartItem.getItem().setCartItem(null);
-            cartItem.setItem(null);
-        });
-
         cartRepository.deleteAll();
         return newOrderId;
+    }
+
+    public int getItemAmount(Long itemId){
+        return cartRepository.getCartItemByItem_Id(itemId).map(CartItem::getCount).orElse(0);
     }
 }

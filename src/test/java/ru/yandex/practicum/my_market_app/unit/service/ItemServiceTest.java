@@ -7,8 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
+import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.entity.Item;
 import ru.yandex.practicum.my_market_app.repository.ItemRepository;
 import ru.yandex.practicum.my_market_app.service.CartService;
@@ -37,6 +39,12 @@ class ItemServiceTest {
 
     @Test
     void getItemsPage() {
+
+        CartPageDto cartPageDto = new CartPageDto(
+                List.of(new ItemDto(1L, "item1", "", "", 1L, 3)),
+                9L
+        );
+
         List<Item> itemList = List.of(
                 Item.builder().id(1L).title("item1").description("").price(1L).imgPath("").build(),
                 Item.builder().id(2L).title("item2").description("").price(2L).imgPath("").build()
@@ -46,6 +54,7 @@ class ItemServiceTest {
 
         when(itemRepository.findAllByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase("", "", page))
                 .thenReturn(items);
+        when(cartService.getCart()).thenReturn(cartPageDto);
 
         ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO");
         long itemCtn = itemPageDto.items().stream().mapToLong(List::size).sum();
@@ -68,7 +77,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void changeAmount(){
+    void changeAmount() {
         itemService.changeItemAmount(1L, "PLUS");
 
         verify(cartService).changeItemAmount(1L, "PLUS");

@@ -31,7 +31,4 @@ public class Item {
     @Column
     private String imgPath;
 
-    @OneToOne(mappedBy = "item")
-    private CartItem cartItem;
-
 }

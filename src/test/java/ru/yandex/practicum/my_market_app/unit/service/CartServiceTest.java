@@ -19,6 +19,7 @@ import ru.yandex.practicum.my_market_app.service.CartService;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,22 +44,25 @@ class CartServiceTest {
 
     private static Stream<Arguments> carts() {
         return Stream.of(
-                Arguments.of(getGoodCart(), 2, 23L),
+                Arguments.of(getGoodCart(), 2, 26L),
                 Arguments.of(List.of(), 0, 0L)
         );
     }
 
     private static Stream<Arguments> changeAmountArgs() {
         return Stream.of(
-                Arguments.of(getGoodCart(), "PLUS", 1, 0),
-                Arguments.of(List.of(), "PLUS", 1, 0),
+                Arguments.of(getGoodCart(),
+                        Optional.of(CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(3).build()), "PLUS", 1, 0),
+                Arguments.of(List.of(CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(1).build()),
+                        Optional.empty(), "PLUS", 1, 0),
                 Arguments.of(List.of(
-                        CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(3).build()), "MINUS", 1, 0),
-                Arguments.of(List.of(
-                        CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(1).build()), "MINUS", 0, 1),
-                Arguments.of(List.of(
-                        CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(5).build()), "DELETE", 0, 1),
-                Arguments.of(List.of(), "MINUS", 0, 0)
+                                CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(2).build()),
+                        Optional.of(CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(3).build()), "MINUS", 1, 0),
+                Arguments.of(List.of(),
+                        Optional.of(CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(1).build()), "MINUS", 0, 1),
+                Arguments.of(List.of(),
+                        Optional.of(CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(3).build()), "DELETE", 0, 1),
+                Arguments.of(List.of(), Optional.empty(), "MINUS", 0, 0)
 
         );
     }
@@ -78,10 +82,10 @@ class CartServiceTest {
 
     @ParameterizedTest
     @MethodSource("changeAmountArgs")
-    void changeItemAmount(List<CartItem> cart, String action, int saveCallCnt, int deleteCallCnt) {
+    void changeItemAmount(List<CartItem> cart, Optional<CartItem> cartItem, String action, int saveCallCnt, int deleteCallCnt) {
 
-        when(cartRepository.findAll()).thenReturn(cart.size() == 1 ? List.of() : cart);
-        when(cartRepository.getCartItemByItem_Id(1L)).thenReturn(cart);
+        when(cartRepository.findAll()).thenReturn(cart);
+        when(cartRepository.getCartItemByItem_Id(1L)).thenReturn(cartItem);
 
         cartService.changeItemAmount(1L, action);
 
@@ -103,7 +107,7 @@ class CartServiceTest {
 
     private static List<CartItem> getGoodCart() {
         return List.of(
-                CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(1).build(),
+                CartItem.builder().id(1L).item(Item.builder().id(1L).title("item1").description("").price(3L).imgPath("").build()).count(2).build(),
                 CartItem.builder().id(2L).item(Item.builder().id(2L).title("item2").description("").price(4L).imgPath("").build()).count(5).build()
         );
     }
