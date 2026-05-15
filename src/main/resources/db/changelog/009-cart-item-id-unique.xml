@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="9" author="sergey.kolotev">
+        <preConditions onFail="HALT">
+            <and>
+                <columnExists tableName="cart" columnName="item_id"/>
+            </and>
+        </preConditions>
+        <addUniqueConstraint tableName="cart" columnNames="item_id" constraintName="cart_item_id_unique"/>
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="cart" constraintName="cart_item_id_unique"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

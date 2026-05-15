@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="11" author="sergey.kolotev">
+        <preConditions onFail="HALT">
+            <tableExists tableName="items"/>
+        </preConditions>
+        <sql>
+            insert into items (title, description, price, img_path)
+            values ('X-Wing', 'Лего набор "X-Wing"', 5000, 'xwing.jpg'),
+                   ('Venator', 'Лего набор "Крейсер Venator"', 11000, 'venator.jpg'),
+                   ('Millenium Falcon', 'Лего набор "Сокол Тысячелетия"', 9000, 'falcon.jpg'),
+                   ('AT-ST', 'Лего набор "Шагоход AT-ST"', 3000, 'atst.jpg'),
+                   ('TIE Fighter', 'Лего набор "TIE истребитель"', 6000, 'tie.jpg'),
+                   ('Star Destroyer', 'Лего набор "Звездный разрушитель"', 23000, 'stardestroyer.jpeg');
+        </sql>
+        <rollback>
+            <sql>
+                delete from items;
+            </sql>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
