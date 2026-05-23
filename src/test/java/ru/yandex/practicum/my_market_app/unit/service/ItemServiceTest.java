@@ -10,7 +10,6 @@ import org.springframework.data.domain.*;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
-import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.entity.Item;
 import ru.yandex.practicum.my_market_app.repository.ItemRepository;
 import ru.yandex.practicum.my_market_app.service.CartService;
@@ -52,8 +51,7 @@ class ItemServiceTest {
         Pageable page = PageRequest.of(0, 5, Sort.by("id"));
         Page<Item> items = new PageImpl<>(itemList, page, itemList.size());
 
-        when(itemRepository.findAllByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase("", "", page))
-                .thenReturn(items);
+
         when(cartService.getCart()).thenReturn(cartPageDto);
 
         ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO");

@@ -3,17 +3,13 @@ package ru.yandex.practicum.my_market_app.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.entity.Item;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
 import ru.yandex.practicum.my_market_app.repository.ItemRepository;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @AllArgsConstructor
@@ -23,55 +19,58 @@ public class CartService {
     private final ItemRepository itemRepository;
     private final OrderService orderService;
 
-    public CartPageDto getCart() {
-        AtomicLong totalSum = new AtomicLong(0L);
+    public Mono<CartPageDto> getCart() {
 
-        List<CartItem> cartItems = cartRepository.findAll();
-
-        List<ItemDto> cartItemDtos = cartItems.stream().map(cartItem -> {
-            totalSum.addAndGet(cartItem.getItem().getPrice() * cartItem.getCount());
-            return ItemMapper.toDto(cartItem.getItem(), cartItem.getCount());
-        }).toList();
-
-        return new CartPageDto(cartItemDtos, totalSum.get());
+        return cartRepository.findAll()
+                .map(cartItem -> ItemMapper.toDto(cartItem.getItem(), cartItem.getCount()))
+                .collectList()
+                .flatMap(itemDtoList -> {
+                    long totalSum = itemDtoList.stream()
+                            .mapToLong(itemDto -> itemDto.count() * itemDto.price()).sum();
+                    return Mono.just(new CartPageDto(itemDtoList, totalSum));
+                });
     }
 
     @Transactional
-    public CartPageDto changeItemAmount(Long itemId, String action) {
-        Optional<CartItem> cartItemList = cartRepository.getCartItemByItem_Id(itemId);
+    public Mono<CartPageDto> changeItemAmount(Long itemId, String action) {
+        Mono<Void> changeAmountMono;
 
-        if (cartItemList.isEmpty()) {
-            if ("PLUS".equalsIgnoreCase(action)) {
-                Item item = itemRepository.getReferenceById(itemId);
-                CartItem newItem = CartItem.builder().item(item).count(1).build();
-                cartRepository.save(newItem);
-            }
+        Mono<CartItem> cartItemMono = cartRepository.getCartItemByItem_Id(itemId);
+
+        if ("PLUS".equalsIgnoreCase(action)) {
+            changeAmountMono = cartItemMono
+                    .doOnNext(CartItem::addOne)
+                    .flatMap(cartRepository::save)
+                    .then()
+                    .switchIfEmpty(
+                            itemRepository
+                                    .findById(itemId)
+                                    .map(item -> CartItem.builder().item(item).count(1).build())
+                                    .flatMap(cartRepository::save).then()
+                    );
         } else {
-            CartItem cartItem = cartItemList.get();
-            if ("PLUS".equalsIgnoreCase(action)) {
-                cartItem.addOne();
-                cartRepository.save(cartItem);
-            } else if ("MINUS".equalsIgnoreCase(action) && cartItem.getCount() > 1) {
-                cartItem.delOne();
-                cartRepository.save(cartItem);
-            } else {
-                cartRepository.delete(cartItem);
-            }
+            changeAmountMono = cartItemMono
+                    .flatMap(cartItem -> {
+                        if (cartItem.getCount() > 1) {
+                            cartItem.delOne();
+                            return cartRepository.save(cartItem).then();
+                        } else {
+                            return cartRepository.delete(cartItem);
+                        }
+                    })
+                    .switchIfEmpty(Mono.empty());
         }
 
-        return this.getCart();
+        return changeAmountMono.then(this.getCart());
+
     }
 
     @Transactional
-    public Long buy() {
-        List<CartItem> cartItems = cartRepository.findAll();
-        Long newOrderId = orderService.buy(cartItems);
+    public Mono<Long> buy() {
+        Flux<CartItem> cartItems = cartRepository.findAll();
+        Mono<Long> newOrderId = orderService.buy(cartItems);
 
         cartRepository.deleteAll();
         return newOrderId;
-    }
-
-    public int getItemAmount(Long itemId){
-        return cartRepository.getCartItemByItem_Id(itemId).map(CartItem::getCount).orElse(0);
     }
 }
