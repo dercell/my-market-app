@@ -7,6 +7,7 @@ import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
 import ru.yandex.practicum.my_market_app.repository.ItemDao;
+
 import java.util.*;
 
 
@@ -41,8 +42,8 @@ public class ItemService {
         return itemDao.getItem(id);
     }
 
-    public void changeItemAmount(Long itemId, String action) {
-        cartService.changeItemAmount(itemId, action);
+    public Mono<Void> changeItemAmount(Long itemId, String action) {
+        return cartService.changeItemAmount(itemId, action).then();
     }
 
     private List<List<ItemDto>> cutItems(List<ItemDto> itemPage) {

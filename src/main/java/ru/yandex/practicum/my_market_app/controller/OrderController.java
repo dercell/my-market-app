@@ -2,12 +2,11 @@ package ru.yandex.practicum.my_market_app.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
+import org.springframework.web.reactive.result.view.Rendering;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
-import java.util.List;
 
 @Controller
 @AllArgsConstructor
@@ -17,25 +16,25 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public String getOrders(Model model) {
-
-        List<OrderPageDto> orders = orderService.getOrders();
-        model.addAttribute("orders", orders);
-        return "orders";
+    public Mono<Rendering> getOrders() {
+        return Mono.just(Rendering.view("orders")
+                .modelAttribute("orders", orderService.getOrders())
+                .build()
+        );
     }
 
     @GetMapping("/{id}")
-    public String getOrderDetail(
+    public Mono<Rendering> getOrderDetail(
             @PathVariable("id") Long orderId,
-            @RequestParam(name = "newOrder", required = false, defaultValue = "false") boolean isNewOrder,
-            Model model
+            @RequestParam(name = "newOrder", required = false, defaultValue = "false") boolean isNewOrder
     ) {
 
-        OrderPageDto pageDto = orderService.getOrderDetail(orderId);
-
-        model.addAttribute("order", pageDto);
-        model.addAttribute("newOrder", isNewOrder);
-        return "order";
+        return Mono.just(Rendering
+                .view("orders")
+                .modelAttribute("order", orderService.getOrderDetail(orderId))
+                .modelAttribute("newOrder", isNewOrder)
+                .build()
+        );
     }
 
 }

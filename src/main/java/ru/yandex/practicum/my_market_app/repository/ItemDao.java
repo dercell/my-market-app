@@ -24,7 +24,7 @@ public class ItemDao {
             """;
 
     private static final String GET_PAGE_SQL = """
-            select i.id, i.title, i.description, i.price, i.img_path, coalesce(c.count, 0) as count 
+            select i.id, i.title, i.description, i.price, i.img_path, coalesce(c.count, 0) as count
             from items as i
                      left join cart as c on i.id = c.item_id
             where i.title like :search

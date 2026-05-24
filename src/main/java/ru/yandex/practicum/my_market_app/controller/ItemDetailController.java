@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
+import org.springframework.web.reactive.result.view.Rendering;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 @Controller
@@ -15,25 +16,24 @@ public class ItemDetailController {
     private final ItemService itemService;
 
     @GetMapping()
-    public String getItem(@PathVariable("id") Long itemId, Model model) {
-        ItemDto item = itemService.getItem(itemId).orElseThrow();
-        model.addAttribute("item", item);
-
-        return "item";
+    public Mono<Rendering> getItem(@PathVariable("id") Long itemId, Model model) {
+        return Mono.just(Rendering.view("item")
+                .modelAttribute("item", itemService.getItem(itemId))
+                .build());
     }
 
     @PostMapping
-    public String changeItemAmount(
+    public Mono<Rendering> changeItemAmount(
             @PathVariable("id") Long itemId,
-            @RequestParam("action") String action,
-            Model model
+            @RequestParam("action") String action
     ) {
 
-        itemService.changeItemAmount(itemId, action);
-        ItemDto item = itemService.getItem(itemId).orElseThrow();
-        model.addAttribute("item", item);
-
-        return "item";
+        return itemService.changeItemAmount(itemId, action)
+                .then(itemService.getItem(itemId))
+                .map(itemDto -> Rendering
+                        .view("item")
+                        .modelAttribute("item", itemDto)
+                        .build());
     }
 
 }
