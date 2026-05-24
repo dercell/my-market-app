@@ -9,6 +9,6 @@ import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 @Repository
 public interface CartRepository extends ReactiveCrudRepository<CartItem, Long> {
     
-    Mono<CartItem> getCartItemByItem_Id(Long itemId);
+    Mono<CartItem> getCartItemByItemId(Long itemId);
 
 }

@@ -8,6 +8,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @Getter
 @Setter
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,8 +20,8 @@ public class CartItem {
     @EqualsAndHashCode.Include
     private Long id;
 
-
-    private Item item;
+    @Column
+    private Long itemId;
 
     @Column
     private Integer count;
@@ -33,7 +34,6 @@ public class CartItem {
         if (count > 1) {
             this.count--;
         }
-
     }
 
 }

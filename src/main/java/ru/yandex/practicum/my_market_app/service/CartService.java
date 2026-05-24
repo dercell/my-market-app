@@ -1,28 +1,27 @@
 package ru.yandex.practicum.my_market_app.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
-import ru.yandex.practicum.my_market_app.repository.ItemRepository;
-import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
+import ru.yandex.practicum.my_market_app.dao.ItemDao;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final ItemRepository itemRepository;
+    private final ItemDao itemDao;
     private final OrderService orderService;
 
     public Mono<CartPageDto> getCart() {
 
-        return cartRepository.findAll()
-                .map(cartItem -> ItemMapper.toDto(cartItem.getItem(), cartItem.getCount()))
+        return itemDao.getItemsInCart()
                 .collectList()
                 .flatMap(itemDtoList -> {
                     long totalSum = itemDtoList.stream()
@@ -35,19 +34,14 @@ public class CartService {
     public Mono<CartPageDto> changeItemAmount(Long itemId, String action) {
         Mono<Void> changeAmountMono;
 
-        Mono<CartItem> cartItemMono = cartRepository.getCartItemByItem_Id(itemId);
-
+        Mono<CartItem> cartItemMono = cartRepository.getCartItemByItemId(itemId);
+        log.info("itemId: {}, action: {}", itemId, action);
         if ("PLUS".equalsIgnoreCase(action)) {
             changeAmountMono = cartItemMono
                     .doOnNext(CartItem::addOne)
                     .flatMap(cartRepository::save)
-                    .then()
-                    .switchIfEmpty(
-                            itemRepository
-                                    .findById(itemId)
-                                    .map(item -> CartItem.builder().item(item).count(1).build())
-                                    .flatMap(cartRepository::save).then()
-                    );
+                    .switchIfEmpty(cartRepository.save(CartItem.builder().itemId(itemId).count(1).build()))
+                    .then();
         } else {
             changeAmountMono = cartItemMono
                     .flatMap(cartItem -> {
@@ -67,10 +61,8 @@ public class CartService {
 
     @Transactional
     public Mono<Long> buy() {
-        Flux<CartItem> cartItems = cartRepository.findAll();
-        Mono<Long> newOrderId = orderService.buy(cartItems);
-
-        cartRepository.deleteAll();
-        return newOrderId;
+        return orderService.buy()
+                .flatMap(newOrderId -> cartRepository
+                        .deleteAll().thenReturn(newOrderId));
     }
 }

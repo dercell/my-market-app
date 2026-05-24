@@ -30,7 +30,7 @@ public class OrderController {
     ) {
 
         return Mono.just(Rendering
-                .view("orders")
+                .view("order")
                 .modelAttribute("order", orderService.getOrderDetail(orderId))
                 .modelAttribute("newOrder", isNewOrder)
                 .build()

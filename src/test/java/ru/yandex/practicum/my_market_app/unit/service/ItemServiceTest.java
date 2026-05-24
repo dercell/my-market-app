@@ -10,8 +10,6 @@ import org.springframework.data.domain.*;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
-import ru.yandex.practicum.my_market_app.model.entity.Item;
-import ru.yandex.practicum.my_market_app.repository.ItemRepository;
 import ru.yandex.practicum.my_market_app.service.CartService;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 

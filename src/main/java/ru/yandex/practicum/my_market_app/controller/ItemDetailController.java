@@ -6,7 +6,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.ItemService;
+
+import java.util.List;
 
 @Controller
 @AllArgsConstructor
@@ -24,12 +27,14 @@ public class ItemDetailController {
 
     @PostMapping
     public Mono<Rendering> changeItemAmount(
-            @PathVariable("id") Long itemId,
-            @RequestParam("action") String action
+            @ModelAttribute ItemForm form
     ) {
+        if (form.getId() == null || !List.of("MINUS", "PLUS").contains(form.getAction())) {
+            Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
+        }
 
-        return itemService.changeItemAmount(itemId, action)
-                .then(itemService.getItem(itemId))
+        return itemService.changeItemAmount(form.getId(), form.getAction())
+                .then(itemService.getItem(form.getId()))
                 .map(itemDto -> Rendering
                         .view("item")
                         .modelAttribute("item", itemDto)

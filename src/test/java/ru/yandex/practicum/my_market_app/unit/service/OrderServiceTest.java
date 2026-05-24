@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
-import ru.yandex.practicum.my_market_app.model.entity.Item;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
 import ru.yandex.practicum.my_market_app.model.entity.OrderItems;
 import ru.yandex.practicum.my_market_app.repository.OrderRepository;

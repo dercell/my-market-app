@@ -2,14 +2,18 @@ package ru.yandex.practicum.my_market_app.controller;
 
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import java.text.MessageFormat;
+import java.util.List;
 
+@Slf4j
 @Controller
 @AllArgsConstructor
 @RequestMapping("/items")
@@ -36,17 +40,15 @@ public class ItemController {
 
     @PostMapping
     public Mono<String> changeItemAmount(
-            @RequestParam("id") Long itemId,
-            @RequestParam("search") String search,
-            @RequestParam("sort") String sort,
-            @RequestParam("pageSize") int pageSize,
-            @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("action") String action
+            @ModelAttribute ItemForm form
     ) {
+        if (form.getId() == null || !List.of("MINUS", "PLUS").contains(form.getAction())) {
+            Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
+        }
 
-        return itemService.changeItemAmount(itemId, action)
+        return itemService.changeItemAmount(form.getId(), form.getAction())
                 .thenReturn(MessageFormat.format("redirect:/items?search={0}&sort={1}&pageNumber={2}&pageSize={3}",
-                        search, sort, pageNumber, pageSize));
+                        form.getSearch(), form.getSort(), form.getPageNumber(), form.getPageSize()));
     }
 
 }

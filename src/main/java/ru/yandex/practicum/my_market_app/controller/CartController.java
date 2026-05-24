@@ -2,26 +2,25 @@ package ru.yandex.practicum.my_market_app.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.CartService;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 
 @Controller
 @AllArgsConstructor
-@RequestMapping("/cart/items")
+@RequestMapping
 public class CartController {
 
     private final CartService cartService;
 
 
-    @GetMapping
+    @GetMapping("/cart/items")
     public Mono<Rendering> getCartItems() {
 
         return cartService.getCart()
@@ -33,11 +32,13 @@ public class CartController {
 
     }
 
-    @PostMapping
-    public Mono<Rendering> changeItemAmount(@RequestParam("id") Long itemId,
-                                            @RequestParam("action") String action) {
+    @PostMapping("/cart/items")
+    public Mono<Rendering> changeItemAmount(@ModelAttribute ItemForm form) {
+        if (form.getId() == null || !List.of("MINUS", "PLUS").contains(form.getAction())) {
+            Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
+        }
 
-        return cartService.changeItemAmount(itemId, action)
+        return cartService.changeItemAmount(form.getId(), form.getAction())
                 .map(cartPageDto -> Rendering.view("cart")
                         .modelAttribute("items", cartPageDto.itemsList())
                         .modelAttribute("total", cartPageDto.totalSum()).build());

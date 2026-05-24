@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @Getter
 @Setter
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,6 +20,12 @@ public class OrderItems {
     @Column
     @EqualsAndHashCode.Include
     private Long id;
+
+    @Column("item_id")
+    private Long itemId;
+
+    @Column("order_id")
+    private Long orderId;
 
     @Column
     private Integer count;

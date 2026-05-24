@@ -28,9 +28,9 @@ public class RootController {
                 search, sort, pageNumber, pageSize));
     }
 
-    @PostMapping("/buy")
-    public Mono<String> buyRedirect() {
-        return Mono.just("forward:/cart/items/buy");
-    }
+//    @PostMapping("/buy")
+//    public Mono<String> buyRedirect() {
+//        return Mono.just("forward:/cart/items/buy");
+//    }
 
 }

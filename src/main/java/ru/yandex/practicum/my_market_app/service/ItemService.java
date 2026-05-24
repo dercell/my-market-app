@@ -1,16 +1,17 @@
 package ru.yandex.practicum.my_market_app.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
-import ru.yandex.practicum.my_market_app.repository.ItemDao;
+import ru.yandex.practicum.my_market_app.dao.ItemDao;
 
 import java.util.*;
 
-
+@Slf4j
 @Service
 @AllArgsConstructor
 public class ItemService {
@@ -20,11 +21,11 @@ public class ItemService {
 
 
     public Mono<ItemPageDto> getItemsPage(String search, int pageNumber, int pageSize, String sort) {
-
+        log.info("search: {}, pageNumber: {}, pageSize: {}, sort: {}", search, pageNumber, pageSize, sort);
         Mono<PageDto> paging = itemDao.getTotalRows(search)
                 .map(total -> {
                     int totalPages = (int) Math.ceil((double) total / pageSize);
-                    boolean hasNext = pageNumber < totalPages;
+                    boolean hasNext = pageNumber < totalPages - 1;
                     boolean hasPrevious = pageNumber > 0;
                     return new PageDto(pageNumber, pageSize, hasPrevious, hasNext);
                 });

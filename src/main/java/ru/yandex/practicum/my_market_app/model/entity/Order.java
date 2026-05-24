@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @Getter
 @Setter
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
