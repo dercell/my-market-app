@@ -29,13 +29,8 @@ public class OrderService {
         Mono<Order> orderMono = orderRepository.findById(id);
         Mono<List<ItemDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
 
-        return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> {
-                    log.info("getOrderDetail");
-                    log.info(tuple2.getT1().toString());
-                    log.info(tuple2.getT2().toString());
-                    return Mono.just(
-                            new OrderPageDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()));
-                }
+        return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(
+                new OrderPageDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()))
         );
     }
 

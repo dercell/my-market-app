@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
 import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
-import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.util.List;
