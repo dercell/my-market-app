@@ -3,9 +3,12 @@ package ru.yandex.practicum.my_market_app.unit.controller;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.OrderController;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
@@ -14,56 +17,67 @@ import ru.yandex.practicum.my_market_app.service.OrderService;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("unit")
-@WebMvcTest(OrderController.class)
+@WebFluxTest(OrderController.class)
 class OrderControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private OrderService orderService;
 
     @Test
-    void getOrders() throws Exception {
+    void getOrders() {
 
-        List<OrderPageDto> orderPageDtoList = List.of(
+        Flux<OrderPageDto> orderPageDtoList = Flux.fromIterable(List.of(
                 new OrderPageDto(
                         1L,
                         List.of(new ItemDto(1L, "item1", "", "", 10, 5),
                                 new ItemDto(2L, "item2", "", "", 3, 1)),
                         53L
                 )
-        );
+        ));
+
         when(orderService.getOrders()).thenReturn(orderPageDtoList);
 
-        mockMvc.perform(get("/orders"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("orders"))
-                .andExpect(model().attribute("orders", orderPageDtoList));
-
+        webTestClient.get().uri("/orders")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("Витрина магазина");
+                    assert html.contains("<b>Сумма: 53 руб.</b>");
+                    assert html.contains("item1") && html.contains("item2");
+                });
     }
 
     @Test
-    void getOrderDetail() throws Exception {
+    void getOrderDetail() {
         OrderPageDto orderPageDto = new OrderPageDto(
                 1L,
                 List.of(new ItemDto(1L, "item1", "", "", 10, 5),
                         new ItemDto(2L, "item2", "", "", 3, 1)),
                 53L
         );
-        when(orderService.getOrderDetail(1L)).thenReturn(orderPageDto);
+        when(orderService.getOrderDetail(1L)).thenReturn(Mono.just(orderPageDto));
 
-
-        mockMvc.perform(get("/orders/{id}", 1L)
-                        .param("newOrder", "false"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("order"));
-
+        webTestClient.get().uri(uriBuilder -> uriBuilder
+                        .path("/orders/" + 2)
+                        .queryParam("newOrder", "false")
+                        .build()
+                )
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h2>Заказ №2</h2>");
+                    assert html.contains("<h3>Сумма: 53 руб.</h3>");
+                });
     }
 
 

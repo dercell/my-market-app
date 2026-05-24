@@ -3,9 +3,11 @@ package ru.yandex.practicum.my_market_app.unit.controller;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.ItemController;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
@@ -18,23 +20,20 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("unit")
-@WebMvcTest(ItemController.class)
+@WebFluxTest(ItemController.class)
 class ItemControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private ItemService itemService;
 
     @Test
-    void getItemPage() throws Exception {
+    void getItemPage() {
 
         ItemPageDto itemPageDto = new ItemPageDto(
                 List.of(List.of(new ItemDto(1L, "item1", "", "", 10, 5),
@@ -43,34 +42,37 @@ class ItemControllerTest {
                 "NO",
                 new PageDto(0, 5, false, false)
         );
-        when(itemService.getItemsPage("", 0, 5, "NO")).thenReturn(itemPageDto);
 
-        mockMvc.perform(get("/items"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("items"))
-                .andExpect(model().attribute("items", itemPageDto.items()))
-                .andExpect(model().attribute("search", itemPageDto.search()))
-                .andExpect(model().attribute("sort", itemPageDto.sort()))
-                .andExpect(model().attribute("paging", itemPageDto.paging()));
+        when(itemService.getItemsPage("", 0, 5, "NO"))
+                .thenReturn(Mono.just(itemPageDto));
 
+        webTestClient.get().uri("/items")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
+                    assert html.contains("<h5 class=\"card-title\">item2</h5>");
+                    assert html.contains("<option value=\"5\" selected=\"selected\">5</option>");
+                });
     }
 
     @Test
-    void changeItemAmount() throws Exception {
+    void changeItemAmount() {
 
         doNothing().when(itemService).changeItemAmount(anyLong(), anyString());
 
-        mockMvc.perform(post("/items")
-                        .param("id", "1")
-                        .param("search", "")
-                        .param("pageNumber", "0")
-                        .param("pageSize", "5")
-                        .param("sort", "NO")
-                        .param("action", "PLUS")
+        webTestClient.post().uri(uriBuilder -> uriBuilder.path("/items")
+                        .queryParam("id", "1")
+                        .queryParam("search", "")
+                        .queryParam("pageNumber", "0")
+                        .queryParam("pageSize", "5")
+                        .queryParam("sort", "NO")
+                        .queryParam("action", "PLUS").build()
                 )
-                .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/items?search=&sort=NO&pageNumber=0&pageSize=5"));
-
+                .exchange()
+                .expectStatus().is3xxRedirection();
     }
 
 }

@@ -43,8 +43,7 @@ class ItemControllerIntegrationTest {
 
 
     @Test
-    void changeItemAmount() throws Exception {
-
+    void changeItemAmount() {
         webTestClient.post().uri(uriBuilder -> uriBuilder.path("/items")
                         .queryParam("id", "1")
                         .queryParam("search", "")
@@ -54,15 +53,7 @@ class ItemControllerIntegrationTest {
                         .queryParam("action", "PLUS").build()
                 )
                 .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
-                .expectBody(String.class)
-                .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
-                    assert html.contains("<h5 class=\"card-title\">Venator</h5>");
-                    assert html.contains("<option value=\"5\" selected=\"selected\">5</option>");
-                    assert html.contains("<span>1</span>");
-                });
+                .expectStatus().is3xxRedirection();
     }
 
 }

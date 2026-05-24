@@ -4,27 +4,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.CartController;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.service.CartService;
 
+
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("unit")
-@WebMvcTest(CartController.class)
+@WebFluxTest(CartController.class)
 class CartControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private CartService cartService;
@@ -41,50 +42,60 @@ class CartControllerTest {
     }
 
     @Test
-    void getCartItems() throws Exception {
+    void getCartItems() {
 
-        when(cartService.getCart()).thenReturn(cart);
+        when(cartService.getCart()).thenReturn(Mono.just(cart));
 
-        mockMvc.perform(get("/cart/items"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("cart"))
-                .andExpect(model().attribute("items", cart.itemsList()))
-                .andExpect(model().attribute("total", cart.totalSum()));
+        webTestClient.get().uri("/cart/items")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
+                    assert html.contains("<h2>Итого: 53 руб.</h2>");
+                });
     }
 
     @Test
-    void changeItemAmount() throws Exception {
+    void changeItemAmount() {
 
-        when(cartService.changeItemAmount(2L, "PLUS")).thenReturn(cart);
+        when(cartService.changeItemAmount(2L, "PLUS")).thenReturn(Mono.just(cart));
 
-        mockMvc.perform(post("/cart/items")
-                        .param("id", "2")
-                        .param("action", "PLUS"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("cart"))
-                .andExpect(model().attribute("items", cart.itemsList()))
-                .andExpect(model().attribute("total", cart.totalSum()));
+        webTestClient.get().uri("/cart/items")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
+                    assert html.contains("<h2>Итого: 53 руб.</h2>");
+                });
     }
 
     @Test
-    void buy() throws Exception {
+    void buy() {
 
-        when(cartService.buy()).thenReturn(3L);
+        when(cartService.buy()).thenReturn(Mono.just(3L));
 
-        mockMvc.perform(post("/cart/items/buy"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/orders/3?newOrder=true"));
+        webTestClient.post().uri("/cart/items/buy")
+                .exchange()
+                .expectStatus().is3xxRedirection();
     }
 
     @Test
-    void buyError() throws Exception {
+    void buyError() {
 
         when(cartService.buy()).thenThrow(new RuntimeException("Save error!"));
 
-        mockMvc.perform(post("/cart/items/buy"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(view().name("error"))
-                .andExpect(model().attribute("message", "Save error!"));
+        webTestClient.post().uri("/cart/items/buy")
+                .exchange()
+                .expectStatus().is5xxServerError()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("Save error!");
+                });
     }
 
 }

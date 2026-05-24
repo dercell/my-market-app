@@ -3,59 +3,67 @@ package ru.yandex.practicum.my_market_app.unit.controller;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.ItemDetailController;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
-import java.util.Optional;
-
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("unit")
-@WebMvcTest(ItemDetailController.class)
+@WebFluxTest(ItemDetailController.class)
 class ItemDetailControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private ItemService itemService;
 
     @Test
-    void getItem() throws Exception {
+    void getItem() {
 
-        Optional<ItemDto> itemDto = Optional.of(new ItemDto(1L, "item1", "", "", 5L, 1));
+        ItemDto itemDto = new ItemDto(1L, "item1", "", "", 5L, 1);
 
-        when(itemService.getItem(1L)).thenReturn(itemDto);
+        when(itemService.getItem(1L)).thenReturn(Mono.just(itemDto));
 
-        mockMvc.perform(get("/items/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("item"))
-                .andExpect(model().attribute("item", itemDto.get()));
+        webTestClient.get().uri("/items/{id}", 1L)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
+                    assert html.contains("5 руб.");
+                });
 
     }
 
     @Test
-    void changeItemAmount() throws Exception {
+    void changeItemAmount() {
 
-        Optional<ItemDto> itemDto = Optional.of(new ItemDto(1L, "item1", "", "", 5L, 1));
+        ItemDto itemDto = new ItemDto(1L, "item1", "", "", 5L, 1);
 
-        when(itemService.getItem(1L)).thenReturn(itemDto);
+        when(itemService.getItem(1L)).thenReturn(Mono.just(itemDto));
         doNothing().when(itemService).changeItemAmount(1L, "PLUS");
 
-        mockMvc.perform(post("/items/{id}", 1L)
-                        .param("action", "PLUS"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("item"))
-                .andExpect(model().attribute("item", itemDto.get()));
-
+        webTestClient.post().uri(uriBuilder -> uriBuilder
+                        .path("/items/" + 1)
+                        .queryParam("action", "PLUS")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
+                    assert html.contains("<span>1</span>");
+                });
     }
 
 }
