@@ -5,59 +5,57 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 
-import java.util.Objects;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("integration")
 @Testcontainers
 @ImportTestcontainers(MySqlContainer.class)
 @Transactional
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ItemDetailControllerIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @Test
-    void getItem() throws Exception {
+    void getItem() {
 
-        MvcResult result = mockMvc.perform(get("/items/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("item"))
-                .andExpect(model().attributeExists("item"))
-                .andReturn();
-
-        ItemDto itemDto = (ItemDto) Objects.requireNonNull(result.getModelAndView()).getModel().get("item");
-
-        assertEquals("X-Wing", itemDto.title());
+        webTestClient.get().uri("/items/{id}", 1L)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
+                    assert html.contains("Лего набор \"X-Wing\"");
+                });
 
     }
 
     @Test
-    void changeItemAmount() throws Exception {
+    void changeItemAmount() {
 
-        MvcResult result = mockMvc.perform(post("/items/{id}", 1L)
-                        .param("action", "PLUS"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("item"))
-                .andExpect(model().attributeExists("item"))
-                .andReturn();
+        webTestClient.post().uri(uriBuilder -> uriBuilder
+                        .path("/items/" + 1)
+                        .queryParam("action", "PLUS")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
+                    assert html.contains("<span>1</span>");
+                });
 
-        ItemDto itemDto = (ItemDto) Objects.requireNonNull(result.getModelAndView()).getModel().get("item");
-        assertEquals(1, itemDto.count());
     }
 
 }

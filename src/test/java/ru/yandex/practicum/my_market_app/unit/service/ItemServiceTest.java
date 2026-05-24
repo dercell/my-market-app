@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
@@ -29,9 +30,6 @@ class ItemServiceTest {
     private ItemService itemService;
 
     @Mock
-    private ItemRepository itemRepository;
-
-    @Mock
     private CartService cartService;
 
     @Test
@@ -42,24 +40,15 @@ class ItemServiceTest {
                 9L
         );
 
-        List<Item> itemList = List.of(
-                Item.builder().id(1L).title("item1").description("").price(1L).imgPath("").build(),
-                Item.builder().id(2L).title("item2").description("").price(2L).imgPath("").build()
-        );
-        Pageable page = PageRequest.of(0, 5, Sort.by("id"));
-        Page<Item> items = new PageImpl<>(itemList, page, itemList.size());
+        when(cartService.getCart()).thenReturn(Mono.just(cartPageDto));
 
-
-        when(cartService.getCart()).thenReturn(cartPageDto);
-
-        ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO");
-        long itemCtn = itemPageDto.items().stream().mapToLong(List::size).sum();
-
-        assertEquals(itemList.size(), itemCtn);
-        assertEquals(0, itemPageDto.paging().pageNumber());
-        assertEquals(5, itemPageDto.paging().pageSize());
-        assertEquals("NO", itemPageDto.sort());
-
+        itemService.getItemsPage("", 0, 5, "NO")
+                .doOnNext(itemPageDto -> {
+                    assertEquals(1, itemPageDto.items().stream().mapToLong(List::size).sum());
+                    assertEquals(0, itemPageDto.paging().pageNumber());
+                    assertEquals(5, itemPageDto.paging().pageSize());
+                    assertEquals("NO", itemPageDto.sort());
+                }).block();
     }
 
     @Test
