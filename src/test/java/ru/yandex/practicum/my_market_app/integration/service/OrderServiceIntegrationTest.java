@@ -35,17 +35,16 @@ class OrderServiceIntegrationTest {
     @Test
     void getOrderDetail() {
 
-        OrderPageDto orderPageDto = orderService.getOrderDetail(2L);
+        OrderPageDto orderPageDto = orderService.getOrderDetail(2L).block();
 
         assertEquals(2, orderPageDto.items().size());
         assertEquals(15000L, orderPageDto.totalSum());
-
     }
 
     @Test
     void getOrders() {
 
-        List<OrderPageDto> orderPageDtoList = orderService.getOrders();
+        List<OrderPageDto> orderPageDtoList = orderService.getOrders().collectList().block();
 
         assertEquals(2, orderPageDtoList.size());
         assertEquals(1, orderPageDtoList.getFirst().items().size());
@@ -56,13 +55,8 @@ class OrderServiceIntegrationTest {
     @Test
     void buy() {
 
-        List<CartItem> cartItemList = List.of(
-                CartItem.builder().id(1L).item(Item.builder().id(1L).title("X-Wing").description("Лего набор \"X-Wing\"").price(5000L).imgPath("xwing.jpg").build()).count(5).build(),
-                CartItem.builder().id(2L).item(Item.builder().id(2L).title("Venator").description("Лего набор \"Крейсер Venator\"").price(11000L).imgPath("venator.jpg").build()).count(1).build()
-        );
-
-        orderService.buy(cartItemList);
-        OrderPageDto orderPageDto = orderService.getOrderDetail(3L);
+        OrderPageDto orderPageDto = orderService.buy().flatMap(orderId -> orderService.getOrderDetail(orderId))
+                .block();
 
         assertEquals(2, orderPageDto.items().size());
         assertEquals(36000L, orderPageDto.totalSum());

@@ -14,7 +14,6 @@ import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,23 +31,23 @@ class ItemServiceIntegrationTest {
 
     @Test
     void getItem() {
-        Optional<ItemDto> item = itemService.getItem(4L);
+        ItemDto itemDto = itemService.getItem(4L).block();
 
-        assertEquals("AT-ST", item.map(ItemDto::title).orElse(null));
+        assertEquals("AT-ST", itemDto.title());
     }
 
     @Test
     void changeItemAmount() {
         itemService.changeItemAmount(4L, "PLUS");
 
-        Optional<ItemDto> item = itemService.getItem(4L);
-        assertEquals(1, item.map(ItemDto::count).orElse(null));
+        ItemDto item = itemService.getItem(4L).block();
+        assertEquals(1, item.count());
     }
 
     @Test
     void getItemPage() {
 
-        ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 10, "NO");
+        ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 10, "NO").block();
         long itemCtn = itemPageDto.items().stream().mapToLong(List::size).sum();
         assertEquals(6, itemCtn);
 

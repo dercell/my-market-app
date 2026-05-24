@@ -38,7 +38,7 @@ class CartServiceIntegrationTest {
 
     @Test
     void getCart() {
-        CartPageDto cartPageDto = cartService.getCart();
+        CartPageDto cartPageDto = cartService.getCart().block();
 
         assertEquals(2, cartPageDto.itemsList().size());
         assertEquals(27000L, cartPageDto.totalSum());
@@ -48,7 +48,7 @@ class CartServiceIntegrationTest {
     @CsvSource({"2,PLUS,38000", "1,MINUS,22000", "2,DELETE,5000"})
     void changeItemAmount(Long itemId, String action, Long totalSum) {
         cartService.changeItemAmount(itemId, action);
-        CartPageDto cartPageDto = cartService.getCart();
+        CartPageDto cartPageDto = cartService.getCart().block();
 
         assertEquals(totalSum, cartPageDto.totalSum());
     }
@@ -57,7 +57,7 @@ class CartServiceIntegrationTest {
     void buy() {
         cartService.buy();
 
-        OrderPageDto orderPageDto = orderService.getOrderDetail(1L);
+        OrderPageDto orderPageDto = orderService.getOrderDetail(1L).block();
         assertEquals(27000L, orderPageDto.totalSum());
     }
 
