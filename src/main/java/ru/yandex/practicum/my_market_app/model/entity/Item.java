@@ -1,9 +1,10 @@
 package ru.yandex.practicum.my_market_app.model.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
 @Builder
 @Getter
 @Setter
@@ -16,7 +17,6 @@ public class Item {
     @Id
     @Column
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
