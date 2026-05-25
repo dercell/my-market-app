@@ -38,14 +38,20 @@ public class CartService {
         log.info("itemId: {}, action: {}", itemId, action);
         if ("PLUS".equalsIgnoreCase(action)) {
             changeAmountMono = cartItemMono
-                    .doOnNext(CartItem::addOne)
-                    .flatMap(cartRepository::save)
-                    .switchIfEmpty(cartRepository.save(CartItem.builder().itemId(itemId).count(1).build()))
+                    .flatMap(cartItem -> {
+                        log.info("addOne");
+                        cartItem.addOne();
+                        return cartRepository.save(cartItem);
+                    })
+                    .switchIfEmpty(Mono.defer(() -> {
+                        log.info("empty");
+                        return cartRepository.save(CartItem.builder().itemId(itemId).count(1).build());
+                    }))
                     .then();
         } else {
             changeAmountMono = cartItemMono
                     .flatMap(cartItem -> {
-                        if (cartItem.getCount() > 1) {
+                        if ("MINUS".equalsIgnoreCase(action) && cartItem.getCount() > 1) {
                             cartItem.delOne();
                             return cartRepository.save(cartItem).then();
                         } else {

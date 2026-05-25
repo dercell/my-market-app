@@ -62,7 +62,9 @@ class CartControllerTest {
 
         when(cartService.changeItemAmount(2L, "PLUS")).thenReturn(Mono.just(cart));
 
-        webTestClient.get().uri("/cart/items")
+        webTestClient.post().uri(uriBuilder -> uriBuilder.path("/cart/items")
+                        .queryParam("id", "2")
+                        .queryParam("action", "PLUS").build())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
@@ -78,7 +80,7 @@ class CartControllerTest {
 
         when(cartService.buy()).thenReturn(Mono.just(3L));
 
-        webTestClient.post().uri("/cart/items/buy")
+        webTestClient.post().uri("/buy")
                 .exchange()
                 .expectStatus().is3xxRedirection();
     }
@@ -88,7 +90,7 @@ class CartControllerTest {
 
         when(cartService.buy()).thenThrow(new RuntimeException("Save error!"));
 
-        webTestClient.post().uri("/cart/items/buy")
+        webTestClient.post().uri("/buy")
                 .exchange()
                 .expectStatus().is5xxServerError()
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)

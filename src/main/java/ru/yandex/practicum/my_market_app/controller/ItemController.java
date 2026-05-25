@@ -42,7 +42,7 @@ public class ItemController {
     public Mono<String> changeItemAmount(
             @ModelAttribute ItemForm form
     ) {
-        if (form.getId() == null || !List.of("MINUS", "PLUS").contains(form.getAction())) {
+        if (form.getId() == null || !List.of("MINUS", "PLUS", "DELETE").contains(form.getAction())) {
             Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
         }
 

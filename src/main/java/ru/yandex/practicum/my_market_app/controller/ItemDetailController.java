@@ -2,7 +2,6 @@ package ru.yandex.practicum.my_market_app.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
@@ -19,7 +18,7 @@ public class ItemDetailController {
     private final ItemService itemService;
 
     @GetMapping()
-    public Mono<Rendering> getItem(@PathVariable("id") Long itemId, Model model) {
+    public Mono<Rendering> getItem(@PathVariable("id") Long itemId) {
         return Mono.just(Rendering.view("item")
                 .modelAttribute("item", itemService.getItem(itemId))
                 .build());
@@ -29,7 +28,7 @@ public class ItemDetailController {
     public Mono<Rendering> changeItemAmount(
             @ModelAttribute ItemForm form
     ) {
-        if (form.getId() == null || !List.of("MINUS", "PLUS").contains(form.getAction())) {
+        if (form.getId() == null || !List.of("MINUS", "PLUS", "DELETE").contains(form.getAction())) {
             Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
         }
 

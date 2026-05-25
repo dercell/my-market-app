@@ -4,7 +4,6 @@ package ru.yandex.practicum.my_market_app.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Mono;
@@ -27,10 +26,5 @@ public class RootController {
         return Mono.just(MessageFormat.format("redirect:/items?search={0}&sort={1}&pageNumber={2}&pageSize={3}",
                 search, sort, pageNumber, pageSize));
     }
-
-//    @PostMapping("/buy")
-//    public Mono<String> buyRedirect() {
-//        return Mono.just("forward:/cart/items/buy");
-//    }
 
 }

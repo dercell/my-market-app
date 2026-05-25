@@ -6,9 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
 import ru.yandex.practicum.my_market_app.service.CartService;
@@ -17,8 +17,7 @@ import ru.yandex.practicum.my_market_app.service.ItemService;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Tag("service")
 @Tag("unit")
@@ -37,12 +36,12 @@ class ItemServiceTest {
     @Test
     void getItemsPage() {
 
-        CartPageDto cartPageDto = new CartPageDto(
-                List.of(new ItemDto(1L, "item1", "", "", 1L, 3)),
-                9L
-        );
+        List<ItemDto> cartPageDto = List.of(new ItemDto(1L, "item1", "", "", 1L, 3));
 
-        when(cartService.getCart()).thenReturn(Mono.just(cartPageDto));
+        when(itemDao.getTotalRows(anyString())).thenReturn(Mono.just(1L));
+        when(itemDao.getItemPage(anyString(), anyInt(), anyInt(), anyString()))
+                .thenReturn(Flux.fromIterable(cartPageDto));
+
 
         ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO").block();
 
@@ -63,6 +62,8 @@ class ItemServiceTest {
 
     @Test
     void changeAmount() {
+        when(cartService.changeItemAmount(1L, "PLUS")).thenReturn(Mono.empty());
+
         itemService.changeItemAmount(1L, "PLUS").block();
 
         verify(cartService).changeItemAmount(1L, "PLUS");

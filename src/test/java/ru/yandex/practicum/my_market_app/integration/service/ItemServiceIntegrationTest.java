@@ -38,7 +38,7 @@ class ItemServiceIntegrationTest {
 
     @Test
     void changeItemAmount() {
-        itemService.changeItemAmount(4L, "PLUS");
+        itemService.changeItemAmount(4L, "PLUS").block();
 
         ItemDto item = itemService.getItem(4L).block();
         assertEquals(1, item.count());

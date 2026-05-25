@@ -12,7 +12,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.dao.ItemDao;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
 import ru.yandex.practicum.my_market_app.service.CartService;
@@ -36,23 +38,32 @@ class CartServiceTest {
     private CartRepository cartRepository;
 
     @Mock
+    private ItemDao itemDao;
+
+    @Mock
     private OrderService orderService;
 
     private static Stream<Arguments> carts() {
-        return Stream.of(Arguments.of(getGoodCart(), 2, 26L), Arguments.of(Flux.empty(), 0, 0L));
+        return Stream.of(Arguments.of(getGoodCart(), 2, 35L),
+                Arguments.of(Flux.empty(), 0, 0L));
     }
 
     private static Stream<Arguments> changeAmountArgs() {
-        return Stream.of(Arguments.of(getGoodCart(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "PLUS", 1, 0), Arguments.of(Flux.fromIterable(List.of(CartItem.builder().id(1L).itemId(1L).count(1).build())), Mono.empty(), "PLUS", 1, 0), Arguments.of(Flux.fromIterable(List.of(CartItem.builder().id(1L).itemId(1L).count(2).build())), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "MINUS", 1, 0), Arguments.of(Flux.empty(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(1).build()), "MINUS", 0, 1), Arguments.of(Flux.empty(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "DELETE", 0, 1), Arguments.of(Flux.empty(), Mono.empty(), "MINUS", 0, 0)
-
+        return Stream.of(
+                Arguments.of(getGoodCart(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "PLUS", 1, 0),
+                Arguments.of(Flux.fromIterable(List.of(new ItemDto(1L, "item1", "", "", 10, 1))), Mono.empty(), "PLUS", 1, 0),
+                Arguments.of(Flux.fromIterable(List.of(new ItemDto(1L, "item1", "", "", 10, 2))), Mono.just(CartItem.builder().id(1L).itemId(1L).count(2).build()), "MINUS", 1, 0),
+                Arguments.of(Flux.empty(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(1).build()), "MINUS", 0, 1),
+                Arguments.of(Flux.empty(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "DELETE", 0, 1),
+                Arguments.of(Flux.empty(), Mono.empty(), "MINUS", 0, 0)
         );
     }
 
     @ParameterizedTest
     @MethodSource("carts")
-    void getCart(Flux<CartItem> cart, Integer cartSize, Long totalSum) {
+    void getCart(Flux<ItemDto> cart, Integer cartSize, Long totalSum) {
 
-        when(cartRepository.findAll()).thenReturn(cart);
+        when(itemDao.getItemsInCart()).thenReturn(cart);
 
         CartPageDto cartPageDto = cartService.getCart().block();
 
@@ -63,12 +74,22 @@ class CartServiceTest {
 
     @ParameterizedTest
     @MethodSource("changeAmountArgs")
-    void changeItemAmount(Flux<CartItem> cart, Mono<CartItem> cartItem, String action, int saveCallCnt, int deleteCallCnt) {
+    void changeItemAmount(Flux<ItemDto> cart, Mono<CartItem> cartItem, String action, int saveCallCnt, int deleteCallCnt) {
 
-        when(cartRepository.findAll()).thenReturn(cart);
         when(cartRepository.getCartItemByItemId(1L)).thenReturn(cartItem);
 
-        cartService.changeItemAmount(1L, action);
+        if (saveCallCnt != 0) {
+            when(cartRepository.save(any(CartItem.class)))
+                    .thenReturn("PLUS".equalsIgnoreCase(action) ? cartItem : Mono.empty());
+        }
+
+        if (deleteCallCnt != 0) {
+            when(cartRepository.delete(any(CartItem.class))).thenReturn(Mono.empty());
+        }
+
+        when(itemDao.getItemsInCart()).thenReturn(cart);
+
+        cartService.changeItemAmount(1L, action).block();
 
         verify(cartRepository, times(saveCallCnt)).save(any(CartItem.class));
         verify(cartRepository, times(deleteCallCnt)).delete(any(CartItem.class));
@@ -76,8 +97,8 @@ class CartServiceTest {
 
     @Test
     void buy() {
-        when(cartRepository.findAll()).thenReturn(getGoodCart());
         when(orderService.buy()).thenReturn(Mono.just(1L));
+        when(cartRepository.deleteAll()).thenReturn(Mono.empty());
 
         Long newOrderId = cartService.buy().block();
 
@@ -86,12 +107,10 @@ class CartServiceTest {
 
     }
 
-    private static Flux<CartItem> getGoodCart() {
+    private static Flux<ItemDto> getGoodCart() {
         return Flux.fromIterable(
-                List.of(
-                        CartItem.builder().id(1L).itemId(1L).count(2).build(),
-                        CartItem.builder().id(2L).itemId(2L).count(5).build()
-                )
+                List.of(new ItemDto(1L, "item1", "", "", 10, 2),
+                        new ItemDto(2L, "item2", "", "", 3, 5))
         );
     }
 

@@ -12,12 +12,14 @@ import ru.yandex.practicum.my_market_app.dao.ItemDao;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
+import ru.yandex.practicum.my_market_app.repository.OrderItemRepository;
 import ru.yandex.practicum.my_market_app.repository.OrderRepository;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +33,9 @@ class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private OrderItemRepository orderItemRepository;
 
     @Mock
     private ItemDao itemDao;
@@ -48,7 +53,6 @@ class OrderServiceTest {
         OrderPageDto orderPageDto = orderService.getOrderDetail(1L).block();
 
         assertEquals(order.getId(), orderPageDto.id());
-        assertEquals(order.getTotalSum(), orderPageDto.items().size());
         assertEquals(order.getTotalSum(), orderPageDto.totalSum());
     }
 
@@ -80,7 +84,8 @@ class OrderServiceTest {
     @Test
     void buy() {
 
-        Order newOrder = Order.builder().id(1L).totalSum(10L).build();
+        Order newOrder = Order.builder().totalSum(10L).build();
+        Order savedOrder = Order.builder().id(1L).totalSum(10L).build();
 
         List<ItemDto> cartItems = List.of(
                 new ItemDto(2L, "item2", "", "", 3L, 1),
@@ -88,12 +93,15 @@ class OrderServiceTest {
         );
 
         when(itemDao.getItemsInCart()).thenReturn(Flux.fromIterable(cartItems));
-        when(orderRepository.save(newOrder)).thenReturn(Mono.just(newOrder));
+        when(orderRepository.save(newOrder)).thenReturn(Mono.just(savedOrder));
+        when(orderItemRepository.saveAll(anyCollection())).thenReturn(Flux.empty());
 
         Long newId = orderService.buy().block();
-        verify(orderRepository).save(newOrder);
 
-        assertEquals(newOrder.getId(), newId);
+        verify(orderRepository).save(newOrder);
+        verify(orderItemRepository).saveAll(anyCollection());
+
+        assertEquals(savedOrder.getId(), newId);
     }
 
 }

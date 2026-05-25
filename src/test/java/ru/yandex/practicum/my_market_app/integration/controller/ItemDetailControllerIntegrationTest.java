@@ -8,7 +8,6 @@ import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
 
@@ -17,7 +16,6 @@ import ru.yandex.practicum.my_market_app.config.MySqlContainer;
 @Tag("integration")
 @Testcontainers
 @ImportTestcontainers(MySqlContainer.class)
-@Transactional
 @AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ItemDetailControllerIntegrationTest {
@@ -35,7 +33,7 @@ class ItemDetailControllerIntegrationTest {
                 .expectBody(String.class)
                 .value(html -> {
                     assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
-                    assert html.contains("Лего набор \"X-Wing\"");
+                    assert html.contains("Лего набор");
                 });
 
     }

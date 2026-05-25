@@ -50,7 +50,7 @@ class ItemDetailControllerTest {
         ItemDto itemDto = new ItemDto(1L, "item1", "", "", 5L, 1);
 
         when(itemService.getItem(1L)).thenReturn(Mono.just(itemDto));
-        doNothing().when(itemService).changeItemAmount(1L, "PLUS");
+        when(itemService.changeItemAmount(1L, "PLUS")).thenReturn(Mono.empty());
 
         webTestClient.post().uri(uriBuilder -> uriBuilder
                         .path("/items/" + 1)
@@ -61,7 +61,7 @@ class ItemDetailControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
+                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
                     assert html.contains("<span>1</span>");
                 });
     }

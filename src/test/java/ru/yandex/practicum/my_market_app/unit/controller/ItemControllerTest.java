@@ -18,7 +18,6 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Tag("controller")
@@ -61,7 +60,7 @@ class ItemControllerTest {
     @Test
     void changeItemAmount() {
 
-        doNothing().when(itemService).changeItemAmount(anyLong(), anyString());
+        when(itemService.changeItemAmount(anyLong(), anyString())).thenReturn(Mono.empty());
 
         webTestClient.post().uri(uriBuilder -> uriBuilder.path("/items")
                         .queryParam("id", "1")

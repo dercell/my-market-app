@@ -66,7 +66,7 @@ class OrderControllerTest {
         when(orderService.getOrderDetail(1L)).thenReturn(Mono.just(orderPageDto));
 
         webTestClient.get().uri(uriBuilder -> uriBuilder
-                        .path("/orders/" + 2)
+                        .path("/orders/" + 1)
                         .queryParam("newOrder", "false")
                         .build()
                 )
@@ -75,7 +75,7 @@ class OrderControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h2>Заказ №2</h2>");
+                    assert html.contains("<h2>Заказ №1</h2>");
                     assert html.contains("<h3>Сумма: 53 руб.</h3>");
                 });
     }
