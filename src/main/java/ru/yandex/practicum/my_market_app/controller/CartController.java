@@ -35,7 +35,7 @@ public class CartController {
     @PostMapping("/cart/items")
     public Mono<Rendering> changeItemAmount(@ModelAttribute ItemForm form) {
         if (form.getId() == null || !List.of("MINUS", "PLUS", "DELETE").contains(form.getAction())) {
-            Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
+            return Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
         }
 
         return cartService.changeItemAmount(form.getId(), form.getAction())

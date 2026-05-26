@@ -16,6 +16,7 @@ import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @Tag("controller")
@@ -49,9 +50,9 @@ class OrderControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("Витрина магазина");
-                    assert html.contains("<b>Сумма: 53 руб.</b>");
-                    assert html.contains("item1") && html.contains("item2");
+                    assertTrue(html.contains("Витрина магазина"));
+                    assertTrue(html.contains("<b>Сумма: 53 руб.</b>"));
+                    assertTrue(html.contains("item1") && html.contains("item2"));
                 });
     }
 
@@ -75,8 +76,8 @@ class OrderControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h2>Заказ №1</h2>");
-                    assert html.contains("<h3>Сумма: 53 руб.</h3>");
+                    assertTrue(html.contains("<h2>Заказ №1</h2>"));
+                    assertTrue(html.contains("<h3>Сумма: 53 руб.</h3>"));
                 });
     }
 

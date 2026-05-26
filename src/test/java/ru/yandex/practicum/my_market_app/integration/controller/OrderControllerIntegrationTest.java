@@ -16,6 +16,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @Tag("controller")
 @Tag("integration")
@@ -52,8 +54,8 @@ class OrderControllerIntegrationTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("Витрина магазина");
-                    assert html.contains("Заказ №1") && html.contains("Заказ №2");
+                    assertTrue(html.contains("Витрина магазина"));
+                    assertTrue(html.contains("Заказ №1") && html.contains("Заказ №2"));
                 });
     }
 
@@ -70,8 +72,8 @@ class OrderControllerIntegrationTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h2>Заказ №2</h2>");
-                    assert html.contains("<h3>Сумма: 15000 руб.</h3>");
+                    assertTrue(html.contains("<h2>Заказ №2</h2>"));
+                    assertTrue(html.contains("<h3>Сумма: 15000 руб.</h3>"));
                 });
     }
 

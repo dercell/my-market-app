@@ -16,6 +16,7 @@ import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -51,9 +52,9 @@ class ItemControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
-                    assert html.contains("<h5 class=\"card-title\">item2</h5>");
-                    assert html.contains("<option value=\"5\" selected=\"selected\">5</option>");
+                    assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
+                    assertTrue(html.contains("<h5 class=\"card-title\">item2</h5>"));
+                    assertTrue(html.contains("<option value=\"5\" selected=\"selected\">5</option>"));
                 });
     }
 

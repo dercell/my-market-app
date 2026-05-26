@@ -12,6 +12,7 @@ import ru.yandex.practicum.my_market_app.controller.ItemDetailController;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @Tag("controller")
@@ -38,8 +39,8 @@ class ItemDetailControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
-                    assert html.contains("5 руб.");
+                    assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
+                    assertTrue(html.contains("5 руб."));
                 });
 
     }
@@ -61,8 +62,8 @@ class ItemDetailControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
-                    assert html.contains("<span>1</span>");
+                    assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
+                    assertTrue(html.contains("<span>1</span>"));
                 });
     }
 

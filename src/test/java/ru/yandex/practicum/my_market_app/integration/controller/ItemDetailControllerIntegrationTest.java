@@ -11,6 +11,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @Tag("controller")
 @Tag("integration")
@@ -32,8 +34,8 @@ class ItemDetailControllerIntegrationTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
-                    assert html.contains("Лего набор");
+                    assertTrue(html.contains("<h5 class=\"card-title\">X-Wing</h5>"));
+                    assertTrue(html.contains("Лего набор"));
                 });
 
     }
@@ -50,8 +52,8 @@ class ItemDetailControllerIntegrationTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">X-Wing</h5>");
-                    assert html.contains("<span>1</span>");
+                    assertTrue(html.contains("<h5 class=\"card-title\">X-Wing</h5>"));
+                    assertTrue(html.contains("<span>1</span>"));
                 });
 
     }

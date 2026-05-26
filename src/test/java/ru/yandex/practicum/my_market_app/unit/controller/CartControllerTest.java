@@ -17,6 +17,7 @@ import ru.yandex.practicum.my_market_app.service.CartService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @Tag("controller")
@@ -52,8 +53,8 @@ class CartControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
-                    assert html.contains("<h2>Итого: 53 руб.</h2>");
+                    assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
+                    assertTrue(html.contains("<h2>Итого: 53 руб.</h2>"));
                 });
     }
 
@@ -70,8 +71,8 @@ class CartControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("<h5 class=\"card-title\">item1</h5>");
-                    assert html.contains("<h2>Итого: 53 руб.</h2>");
+                    assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
+                    assertTrue(html.contains("<h2>Итого: 53 руб.</h2>"));
                 });
     }
 
@@ -96,7 +97,7 @@ class CartControllerTest {
                 .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
                 .expectBody(String.class)
                 .value(html -> {
-                    assert html.contains("Save error!");
+                    assertTrue(html.contains("Save error!"));
                 });
     }
 
