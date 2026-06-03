@@ -1,12 +1,14 @@
 package ru.yandex.practicum.my_market_app.model.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
 @Builder
 @Getter
 @Setter
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,12 +18,10 @@ public class CartItem {
     @Id
     @Column
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "item_id", unique = true)
-    private Item item;
+    @Column
+    private Long itemId;
 
     @Column
     private Integer count;
@@ -34,7 +34,6 @@ public class CartItem {
         if (count > 1) {
             this.count--;
         }
-
     }
 
 }

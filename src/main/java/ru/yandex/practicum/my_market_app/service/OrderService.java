@@ -1,66 +1,68 @@
 package ru.yandex.practicum.my_market_app.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
-import ru.yandex.practicum.my_market_app.model.entity.CartItem;
-import ru.yandex.practicum.my_market_app.model.entity.Item;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
 import ru.yandex.practicum.my_market_app.model.entity.OrderItems;
+import ru.yandex.practicum.my_market_app.dao.ItemDao;
+import ru.yandex.practicum.my_market_app.repository.OrderItemRepository;
 import ru.yandex.practicum.my_market_app.repository.OrderRepository;
-import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final ItemDao itemDao;
 
-    public OrderPageDto getOrderDetail(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow();
-        return getOrderInfo(order);
+    public Mono<OrderPageDto> getOrderDetail(Long id) {
+        Mono<Order> orderMono = orderRepository.findById(id);
+        Mono<List<ItemDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
+
+        return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(
+                new OrderPageDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()))
+        );
     }
 
-    public List<OrderPageDto> getOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return orders.stream().map(this::getOrderInfo).toList();
+    public Flux<OrderPageDto> getOrders() {
+        return orderRepository.findAll()
+                .flatMap(order -> itemDao
+                        .getOrderItems(order.getId())
+                        .collectList()
+                        .map(itemDtoList -> new OrderPageDto(order.getId(), itemDtoList, order.getTotalSum()))
+                );
     }
 
     @Transactional
-    public Long buy(List<CartItem> cartItemList) {
-        Order newOrder = new Order();
-        AtomicLong totalSum = new AtomicLong(0L);
-
-        List<OrderItems> orderItems = cartItemList.stream()
-                .map(cartItem -> {
-                    totalSum.addAndGet(cartItem.getItem().getPrice() * cartItem.getCount());
-                    return OrderItems
-                            .builder()
-                            .order(newOrder)
-                            .item(cartItem.getItem())
-                            .count(cartItem.getCount())
-                            .build();
+    public Mono<Long> buy() {
+        return itemDao.getItemsInCart()
+                .collectList()
+                .zipWhen(itemDtoList -> {
+                    Order newOrder = new Order();
+                    long totalSum = itemDtoList.stream().mapToLong(
+                            itemDto -> itemDto.price() * itemDto.count()
+                    ).sum();
+                    newOrder.setTotalSum(totalSum);
+                    return orderRepository.save(newOrder).map(Order::getId);
                 })
-                .toList();
-        newOrder.setOrderItems(orderItems);
-        newOrder.setTotalSum(totalSum.get());
+                .flatMap(tuple2 ->
+                        {
+                            List<OrderItems> orderItemsList = tuple2.getT1().stream().map(itemDto -> OrderItems
+                                    .builder().itemId(itemDto.id()).orderId(tuple2.getT2()).count(itemDto.count()).build()
+                            ).toList();
+                            return orderItemRepository.saveAll(orderItemsList).then(Mono.just(tuple2.getT2()));
+                        }
+                );
 
-        Order savedOrder = orderRepository.save(newOrder);
-        return savedOrder.getId();
-    }
-
-    private OrderPageDto getOrderInfo(Order order) {
-        List<ItemDto> cartItems = new ArrayList<>();
-        for (OrderItems orderItem : order.getOrderItems()) {
-            Item cartItem = orderItem.getItem();
-            cartItems.add(ItemMapper.toDto(cartItem, orderItem.getCount()));
-        }
-        return new OrderPageDto(order.getId(), cartItems, order.getTotalSum());
     }
 }

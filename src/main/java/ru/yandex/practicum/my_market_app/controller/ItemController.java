@@ -2,14 +2,18 @@ package ru.yandex.practicum.my_market_app.controller;
 
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
+import org.springframework.web.reactive.result.view.Rendering;
+import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import java.text.MessageFormat;
+import java.util.List;
 
+@Slf4j
 @Controller
 @AllArgsConstructor
 @RequestMapping("/items")
@@ -18,37 +22,33 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public String getItemPage(
+    public Mono<Rendering> getItemPage(
             @RequestParam(value = "search", defaultValue = "") String search,
             @RequestParam(value = "sort", defaultValue = "NO") String sort,
             @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
-            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-            Model model) {
+            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber
+    ) {
 
-        ItemPageDto itemPageDto = itemService.getItemsPage(search, pageNumber, pageSize, sort);
-
-        model.addAttribute("items", itemPageDto.items());
-        model.addAttribute("search", itemPageDto.search());
-        model.addAttribute("sort", itemPageDto.sort());
-        model.addAttribute("paging", itemPageDto.paging());
-
-        return "items";
+        return itemService.getItemsPage(search, pageNumber, pageSize, sort)
+                .map(itemPageDto -> Rendering.view("items")
+                        .modelAttribute("items", itemPageDto.items())
+                        .modelAttribute("search", itemPageDto.search())
+                        .modelAttribute("sort", itemPageDto.sort())
+                        .modelAttribute("paging", itemPageDto.paging())
+                        .build());
     }
 
     @PostMapping
-    public String changeItemAmount(
-            @RequestParam("id") Long itemId,
-            @RequestParam("search") String search,
-            @RequestParam("sort") String sort,
-            @RequestParam("pageSize") int pageSize,
-            @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("action") String action
+    public Mono<String> changeItemAmount(
+            @ModelAttribute ItemForm form
     ) {
+        if (form.getId() == null || !List.of("MINUS", "PLUS", "DELETE").contains(form.getAction())) {
+            return Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
+        }
 
-        String redirectionString = "redirect:/items?search={0}&sort={1}&pageNumber={2}&pageSize={3}";
-        itemService.changeItemAmount(itemId, action);
-
-        return MessageFormat.format(redirectionString, search, sort, pageNumber, pageSize);
+        return itemService.changeItemAmount(form.getId(), form.getAction())
+                .thenReturn(MessageFormat.format("redirect:/items?search={0}&sort={1}&pageNumber={2}&pageSize={3}",
+                        form.getSearch(), form.getSort(), form.getPageNumber(), form.getPageSize()));
     }
 
 }

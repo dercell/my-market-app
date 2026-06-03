@@ -1,57 +1,50 @@
 package ru.yandex.practicum.my_market_app.service;
 
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
+import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
-import ru.yandex.practicum.my_market_app.model.entity.Item;
-import ru.yandex.practicum.my_market_app.repository.ItemRepository;
-import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
+import ru.yandex.practicum.my_market_app.dao.ItemDao;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 @AllArgsConstructor
 public class ItemService {
 
-    private final ItemRepository itemRepository;
     private final CartService cartService;
+    private final ItemDao itemDao;
 
-    public ItemPageDto getItemsPage(String search, int pageNumber, int pageSize, String sort) {
-        Sort sortColumn = getItemSort(sort);
-        Pageable page = PageRequest.of(pageNumber, pageSize, sortColumn);
 
-        Page<Item> pageItems = itemRepository.findAllByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(search, search, page);
-        CartPageDto cartPageDto = cartService.getCart();
+    public Mono<ItemPageDto> getItemsPage(String search, int pageNumber, int pageSize, String sort) {
+        log.info("search: {}, pageNumber: {}, pageSize: {}, sort: {}", search, pageNumber, pageSize, sort);
+        Mono<PageDto> paging = itemDao.getTotalRows(search)
+                .map(total -> {
+                    int totalPages = (int) Math.ceil((double) total / pageSize);
+                    boolean hasNext = pageNumber < totalPages - 1;
+                    boolean hasPrevious = pageNumber > 0;
+                    return new PageDto(pageNumber, pageSize, hasPrevious, hasNext);
+                });
 
-        Map<Long, ItemDto> itemAmountMap = cartPageDto.itemsList().stream().collect(Collectors.toMap(ItemDto::id, p -> p));
+        Mono<List<ItemDto>> pageItems = itemDao.getItemPage(search, pageNumber, pageSize, sort)
+                .collectList();
 
-        List<ItemDto> itemDtos = pageItems.getContent().stream()
-                .map(item ->
-                        itemAmountMap.get(item.getId()) != null ?
-                                itemAmountMap.get(item.getId()) : ItemMapper.toDto(item, 0)
-                ).toList();
+        return Mono.zip(pageItems, paging)
+                .map(tuple2 ->
+                        new ItemPageDto(cutItems(tuple2.getT1()), search, sort, tuple2.getT2()));
 
-        PageDto paging = new PageDto(pageNumber, pageSize, pageItems.hasPrevious(), pageItems.hasNext());
-        return new ItemPageDto(cutItems(itemDtos), search, sort, paging);
     }
 
-    public Optional<ItemDto> getItem(Long id) {
-        int amount = cartService.getItemAmount(id);
-        return itemRepository.findById(id)
-                .map(item -> ItemMapper.toDto(item, amount));
+    public Mono<ItemDto> getItem(Long id) {
+        return itemDao.getItem(id);
     }
 
-    public void changeItemAmount(Long itemId, String action) {
-        cartService.changeItemAmount(itemId, action);
+    public Mono<Void> changeItemAmount(Long itemId, String action) {
+        return cartService.changeItemAmount(itemId, action).then();
     }
 
     private List<List<ItemDto>> cutItems(List<ItemDto> itemPage) {
@@ -69,13 +62,5 @@ public class ItemService {
             result.add(new ArrayList<>(chunk));
         }
         return result;
-    }
-
-    private Sort getItemSort(String sort) {
-        return switch (sort) {
-            case "ALPHA" -> Sort.by("title");
-            case "PRICE" -> Sort.by("price");
-            default -> Sort.by("id");
-        };
     }
 }

@@ -1,64 +1,80 @@
 package ru.yandex.practicum.my_market_app.integration.controller;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
+import org.springframework.r2dbc.connection.init.ScriptUtils;
+import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
 
-import java.util.Objects;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("controller")
 @Tag("integration")
 @Testcontainers
 @ImportTestcontainers(MySqlContainer.class)
-@Transactional
-@Sql(value = "classpath:db/scripts/init_orders.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(value = "classpath:db/scripts/clear_orders.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class OrderControllerIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
-    @Test
-    void getOrders() throws Exception {
+    @Autowired
+    private DatabaseClient databaseClient;
 
-        mockMvc.perform(get("/orders"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("orders"))
-                .andExpect(model().attributeExists("orders"))
-                .andExpect(model().attribute("orders", hasSize(2)));
+    @BeforeEach
+    void setUp() {
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/init_orders.sql"))).block();
+    }
+
+    @AfterEach
+    void clearUp() {
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/clear_orders.sql"))).block();
     }
 
     @Test
-    void getOrderDetail() throws Exception {
+    void getOrders() {
 
-        MvcResult result = mockMvc.perform(get("/orders/{id}", 2L)
-                        .param("newOrder", "false"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("order"))
-                .andExpect(model().attributeExists("order"))
-                .andReturn();
-
-        OrderPageDto orderPageDto = (OrderPageDto) Objects.requireNonNull(result.getModelAndView()).getModel().get("order");
-        assertEquals(15000L, orderPageDto.totalSum());
-        assertEquals(2, orderPageDto.items().size());
+        webTestClient.get().uri("/orders")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("Витрина магазина"));
+                    assertTrue(html.contains("Заказ №1") && html.contains("Заказ №2"));
+                });
     }
 
+    @Test
+    void getOrderDetail() {
+
+        webTestClient.get().uri(uriBuilder -> uriBuilder
+                        .path("/orders/" + 2)
+                        .queryParam("newOrder", "false")
+                        .build()
+                )
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("<h2>Заказ №2</h2>"));
+                    assertTrue(html.contains("<h3>Сумма: 15000 руб.</h3>"));
+                });
+    }
 
 }

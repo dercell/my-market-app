@@ -6,22 +6,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.dao.ItemDao;
 import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
-import ru.yandex.practicum.my_market_app.model.entity.CartItem;
-import ru.yandex.practicum.my_market_app.model.entity.Item;
-import ru.yandex.practicum.my_market_app.repository.ItemRepository;
 import ru.yandex.practicum.my_market_app.service.CartService;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Tag("service")
 @Tag("unit")
@@ -32,7 +28,7 @@ class ItemServiceTest {
     private ItemService itemService;
 
     @Mock
-    private ItemRepository itemRepository;
+    private ItemDao itemDao;
 
     @Mock
     private CartService cartService;
@@ -40,45 +36,35 @@ class ItemServiceTest {
     @Test
     void getItemsPage() {
 
-        CartPageDto cartPageDto = new CartPageDto(
-                List.of(new ItemDto(1L, "item1", "", "", 1L, 3)),
-                9L
-        );
+        List<ItemDto> cartPageDto = List.of(new ItemDto(1L, "item1", "", "", 1L, 3));
 
-        List<Item> itemList = List.of(
-                Item.builder().id(1L).title("item1").description("").price(1L).imgPath("").build(),
-                Item.builder().id(2L).title("item2").description("").price(2L).imgPath("").build()
-        );
-        Pageable page = PageRequest.of(0, 5, Sort.by("id"));
-        Page<Item> items = new PageImpl<>(itemList, page, itemList.size());
+        when(itemDao.getTotalRows(anyString())).thenReturn(Mono.just(1L));
+        when(itemDao.getItemPage(anyString(), anyInt(), anyInt(), anyString()))
+                .thenReturn(Flux.fromIterable(cartPageDto));
 
-        when(itemRepository.findAllByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase("", "", page))
-                .thenReturn(items);
-        when(cartService.getCart()).thenReturn(cartPageDto);
 
-        ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO");
-        long itemCtn = itemPageDto.items().stream().mapToLong(List::size).sum();
+        ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO").block();
 
-        assertEquals(itemList.size(), itemCtn);
+        assertEquals(1, itemPageDto.items().stream().mapToLong(List::size).sum());
         assertEquals(0, itemPageDto.paging().pageNumber());
         assertEquals(5, itemPageDto.paging().pageSize());
         assertEquals("NO", itemPageDto.sort());
-
     }
 
     @Test
     void getItem() {
-        Item item = Item.builder().id(1L).title("item1").description("").price(1L).imgPath("").build();
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        ItemDto testItemDto = new ItemDto(1L, "item1", "", "", 1L, 3);
+        when(itemDao.getItem(1L)).thenReturn(Mono.just(testItemDto));
+        ItemDto itemDto = itemService.getItem(1L).block();
 
-        Optional<ItemDto> itemDto = itemService.getItem(1L);
-
-        assertEquals(item.getTitle(), itemDto.map(ItemDto::title).orElse(null));
+        assertEquals(testItemDto.title(), itemDto.title());
     }
 
     @Test
     void changeAmount() {
-        itemService.changeItemAmount(1L, "PLUS");
+        when(cartService.changeItemAmount(1L, "PLUS")).thenReturn(Mono.empty());
+
+        itemService.changeItemAmount(1L, "PLUS").block();
 
         verify(cartService).changeItemAmount(1L, "PLUS");
     }

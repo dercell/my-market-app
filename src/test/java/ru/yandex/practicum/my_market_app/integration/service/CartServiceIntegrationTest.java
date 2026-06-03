@@ -1,15 +1,15 @@
 package ru.yandex.practicum.my_market_app.integration.service;
 
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.r2dbc.connection.init.ScriptUtils;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
 import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
@@ -21,10 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("integration")
 @Tag("service")
-@Transactional
-@Sql(statements = "insert into cart(id, item_id, count) values (1,1,1), (2,2,2)", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(statements = "truncate table cart", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@Sql(value = "classpath:db/scripts/clear_orders.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @Testcontainers
 @ImportTestcontainers(MySqlContainer.class)
 @SpringBootTest
@@ -34,11 +30,27 @@ class CartServiceIntegrationTest {
     private CartService cartService;
 
     @Autowired
+    private DatabaseClient databaseClient;
+
+    @Autowired
     private OrderService orderService;
+
+    @BeforeEach
+    void setUp() {
+        databaseClient.sql("insert into cart(id, item_id, count) values (1,1,1), (2,2,2)").fetch().first().block();
+    }
+
+    @AfterEach
+    void clearUp() {
+        databaseClient.sql("delete from cart").fetch().first().block();
+        databaseClient.sql("alter table cart auto_increment = 1").fetch().first().block();
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/clear_orders.sql"))).block();
+    }
 
     @Test
     void getCart() {
-        CartPageDto cartPageDto = cartService.getCart();
+        CartPageDto cartPageDto = cartService.getCart().block();
 
         assertEquals(2, cartPageDto.itemsList().size());
         assertEquals(27000L, cartPageDto.totalSum());
@@ -47,17 +59,17 @@ class CartServiceIntegrationTest {
     @ParameterizedTest
     @CsvSource({"2,PLUS,38000", "1,MINUS,22000", "2,DELETE,5000"})
     void changeItemAmount(Long itemId, String action, Long totalSum) {
-        cartService.changeItemAmount(itemId, action);
-        CartPageDto cartPageDto = cartService.getCart();
+        cartService.changeItemAmount(itemId, action).block();
+        CartPageDto cartPageDto = cartService.getCart().block();
 
         assertEquals(totalSum, cartPageDto.totalSum());
     }
 
     @Test
     void buy() {
-        cartService.buy();
+        cartService.buy().block();
 
-        OrderPageDto orderPageDto = orderService.getOrderDetail(1L);
+        OrderPageDto orderPageDto = orderService.getOrderDetail(1L).block();
         assertEquals(27000L, orderPageDto.totalSum());
     }
 
