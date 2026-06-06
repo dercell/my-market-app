@@ -12,87 +12,41 @@
 
 
 package ru.yandex.practicum.my_market_app.model.dto;
-
-import java.util.Objects;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.springframework.lang.Nullable;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 
 /**
  * Error
  */
-@JsonPropertyOrder({
-  Error.JSON_PROPERTY_MESSAGE
-})
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2026-06-06T15:32:35.378501+03:00[Europe/Moscow]", comments = "Generator version: 7.22.0")
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 public class Error {
-  public static final String JSON_PROPERTY_MESSAGE = "message";
-  @jakarta.annotation.Nullable
-  private String message;
 
-  public Error() {
-  }
-
-  public Error message(@jakarta.annotation.Nullable String message) {
-    
-    this.message = message;
-    return this;
-  }
+  private @Nullable String message;
 
   /**
    * Get message
+   *
    * @return message
    */
-  @jakarta.annotation.Nullable
-  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getMessage() {
+  @Schema(name = "message", example = "Сообщение об ошибке", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("message")
+  public @Nullable String getMessage() {
     return message;
   }
 
-
-  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMessage(@jakarta.annotation.Nullable String message) {
+  @JsonProperty("message")
+  public void setMessage(@Nullable String message) {
     this.message = message;
   }
 
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Error error = (Error) o;
-    return Objects.equals(this.message, error.message);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(message);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Error {\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    return o == null ? "null" : o.toString().replace("\n", "\n    ");
-  }
-
 }
-
