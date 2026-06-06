@@ -28,7 +28,8 @@ public class ChargeBalanceRequest {
      *
      * @return totalSum
      */
-    @NotNull
+    @NotNull(message = "Необходимо указать сумму для списания")
+    @Min(value = 0, message = "Сумма для списания не должна быть отрицательной")
     @Schema(name = "totalSum", example = "4000", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("totalSum")
     public Long getTotalSum() {

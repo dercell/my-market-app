@@ -1,12 +1,14 @@
 package ru.yadex.practicum.server.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import jakarta.validation.constraints.*;
-import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Balance
@@ -17,7 +19,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @AllArgsConstructor
 public class Balance {
 
-    private Long balance;
+    private AtomicLong sum;
+
+    public Balance(Long sum) {
+        this.sum = new AtomicLong(sum);
+    }
 
     /**
      * Get balance
@@ -27,13 +33,13 @@ public class Balance {
     @NotNull
     @Schema(name = "balance", example = "15000", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("balance")
-    public Long getBalance() {
-        return balance;
+    public Long getSum() {
+        return sum.get();
     }
 
     @JsonProperty("balance")
-    public void setBalance(Long balance) {
-        this.balance = balance;
+    public void setSum(Long balance) {
+        this.sum.set(balance);
     }
 
 }
