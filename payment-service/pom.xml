@@ -41,9 +41,9 @@
                         <configuration>
                             <inputSpec>${project.basedir}/../api-spec.yaml</inputSpec>
                             <generatorName>spring</generatorName>
-                            <apiPackage>ru.ya.server.api</apiPackage>
-                            <invokerPackage>ru.ya.server</invokerPackage>
-                            <modelPackage>ru.ya.server.domain</modelPackage>
+                            <apiPackage>ru.yadex.practicum.server.api</apiPackage>
+                            <invokerPackage>ru.yadex.practicum.server</invokerPackage>
+                            <modelPackage>ru.yadex.practicum.server.domain</modelPackage>
                             <configOptions>
                                 <library>spring-boot</library>
                                 <reactive>true</reactive>

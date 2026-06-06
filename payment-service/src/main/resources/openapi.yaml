@@ -1,0 +1,134 @@
+openapi: 3.0.4
+info:
+  title: API Сервиса оплаты заказа
+  version: 1.0.0
+servers:
+- description: Основной сервер для работы с API оплаты заказа
+  url: http://localhost:8090/
+paths:
+  /balance:
+    get:
+      operationId: getBalance
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+          description: Возвращает текущий баланс
+        "400":
+          content:
+            application/json:
+              example:
+                message: Некорректный запрос
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Некорректный запрос
+        "5XX":
+          content:
+            application/json:
+              example:
+                message: Внутренняя ошибка
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Ошибки сервера
+      summary: Получение текущего баланса
+      x-accepts:
+      - application/json
+  /chargeBalance:
+    post:
+      operationId: chargeBalance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/chargeBalance_request"
+        description: Сумма для списания
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChargeStatus"
+          description: Успешное списание средств
+        "400":
+          content:
+            application/json:
+              example:
+                message: Некорректный запрос
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Некорректный запрос
+        "5XX":
+          content:
+            application/json:
+              example:
+                message: Внутренняя ошибка
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Ошибки сервера
+      summary: Списание суммы заказа со счета
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+components:
+  responses:
+    InvalidRequest:
+      content:
+        application/json:
+          example:
+            message: Некорректный запрос
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Некорректный запрос
+    ServerError:
+      content:
+        application/json:
+          example:
+            message: Внутренняя ошибка
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Ошибки сервера
+  schemas:
+    ChargeStatus:
+      example:
+        status: Оплата прошла успешно
+        isSuccess: true
+      properties:
+        status:
+          type: string
+        isSuccess:
+          type: boolean
+      required:
+      - isSuccess
+      - status
+      type: object
+    Balance:
+      example:
+        balance: 15000
+      properties:
+        balance:
+          example: 15000
+          format: int64
+          type: integer
+      required:
+      - balance
+      type: object
+    Error:
+      example:
+        message: Сообщение об ошибке
+      properties:
+        message:
+          example: Сообщение об ошибке
+          type: string
+      type: object
+    chargeBalance_request:
+      properties:
+        totalSum:
+          example: 4000
+          format: int64
+          type: integer
+      required:
+      - totalSum
+      type: object
