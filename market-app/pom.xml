@@ -11,20 +11,11 @@
     <packaging>jar</packaging>
 
     <name>market-app</name>
-    <url>http://maven.apache.org</url>
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <resources>
@@ -48,14 +39,16 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/../api-spec.yaml</inputSpec>
-                            <generatorName>spring</generatorName>
+                            <generatorName>java</generatorName>
                             <apiPackage>ru.yandex.practicum.my_market_app.api</apiPackage>
                             <invokerPackage>ru.yandex.practicum.my_market_app.client</invokerPackage>
                             <modelPackage>ru.yandex.practicum.my_market_app.model.dto</modelPackage>
                             <configOptions>
                                 <interfaceOnly>false</interfaceOnly>
-                                <library>webClient</library>
+                                <library>webclient</library>
                                 <reactive>true</reactive>
+                                <useJakartaEe>true</useJakartaEe>
+                                <openApiNullable>false</openApiNullable>
                             </configOptions>
                         </configuration>
                     </execution>
