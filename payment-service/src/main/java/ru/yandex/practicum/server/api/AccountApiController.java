@@ -1,4 +1,4 @@
-package ru.yadex.practicum.server.api;
+package ru.yandex.practicum.server.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,12 +15,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import ru.yadex.practicum.server.domain.Balance;
-import ru.yadex.practicum.server.domain.ChargeBalanceRequest;
-import ru.yadex.practicum.server.domain.ChargeStatus;
-import ru.yadex.practicum.server.domain.Error;
-import ru.yadex.practicum.server.exception.NotEnoughMoneyException;
-import ru.yadex.practicum.server.service.AccountService;
+import ru.yandex.practicum.server.domain.Balance;
+import ru.yandex.practicum.server.domain.ChargeBalanceRequest;
+import ru.yandex.practicum.server.domain.ChargeStatus;
+import ru.yandex.practicum.server.domain.Error;
+import ru.yandex.practicum.server.exception.NotEnoughMoneyException;
+import ru.yandex.practicum.server.service.AccountService;
 
 @Controller
 @RequestMapping("${openapi.aPI.base-path:}")
@@ -45,7 +45,7 @@ public class AccountApiController {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = Balance.class))
                     }),
                     @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = {
-                            @Content(mediaType = "application/json", schema = @Schema(implementation = ru.yadex.practicum.server.domain.Error.class))
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))
                     }),
                     @ApiResponse(responseCode = "5XX", description = "Ошибки сервера", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))
@@ -99,7 +99,7 @@ public class AccountApiController {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ChargeStatus.class))
                     }),
                     @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = {
-                            @Content(mediaType = "application/json", schema = @Schema(implementation = ru.yadex.practicum.server.domain.Error.class))
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))
                     }),
                     @ApiResponse(responseCode = "5XX", description = "Ошибки сервера", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = Error.class))

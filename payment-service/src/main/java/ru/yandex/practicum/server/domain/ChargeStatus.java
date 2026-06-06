@@ -1,4 +1,4 @@
-package ru.yadex.practicum.server.domain;
+package ru.yandex.practicum.server.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

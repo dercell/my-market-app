@@ -1,4 +1,4 @@
-package ru.yadex.practicum.server.domain;
+package ru.yandex.practicum.server.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @AllArgsConstructor
 public class Balance {
 
-    private AtomicLong sum;
+    private AtomicLong sum = new AtomicLong(0);
 
     public Balance(Long sum) {
-        this.sum = new AtomicLong(sum);
+        this.sum.set(sum);
     }
 
     /**

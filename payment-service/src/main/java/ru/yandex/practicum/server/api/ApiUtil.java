@@ -1,4 +1,4 @@
-package ru.yadex.practicum.server.api;
+package ru.yandex.practicum.server.api;
 
 import java.nio.charset.StandardCharsets;
 

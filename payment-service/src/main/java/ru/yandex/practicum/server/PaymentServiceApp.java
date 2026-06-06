@@ -1,4 +1,4 @@
-package ru.yadex.practicum.server;
+package ru.yandex.practicum.server;
 
 import com.fasterxml.jackson.databind.Module;
 import org.openapitools.jackson.nullable.JsonNullableModule;
