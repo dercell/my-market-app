@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import ru.yandex.practicum.server.domain.Balance;
 import ru.yandex.practicum.server.domain.ChargeBalanceRequest;
 import ru.yandex.practicum.server.domain.ChargeStatus;
+import ru.yandex.practicum.server.domain.Error;
 import ru.yandex.practicum.server.service.AccountService;
 
 import java.util.List;
@@ -92,10 +93,9 @@ class AccountApiControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .is5xxServerError()
-                .expectBody(Map.class)
+                .expectBody(Error.class)
                 .value(response -> {
-                    List<String> msg = (List) response.get("message");
-                    assertEquals("totalSum: Сумма для списания не должна быть отрицательной", msg.getFirst());
+                    assertEquals("[totalSum: Сумма для списания не должна быть отрицательной]", response.getMessage());
                 });
 
     }
