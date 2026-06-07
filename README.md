@@ -82,3 +82,6 @@ mvnw.cmd clean test -Dgroups=integration
 mvnw.cmd clean test -Dgroups=controller
 mvnw.cmd clean test -Dgroups=service
 ```
+
+
+docker run --name redis-server -it --rm -p 6379:6379 redis:8.2.7-bookworm 

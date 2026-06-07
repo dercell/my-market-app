@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <title>Создание товара</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+</head>
+
+<body class="bg-light">
+<div class="container p-2">
+    <div class="row p-2">
+        <div class="col">
+            <div class="hstack gap-3">
+                <h2>
+                    <span class="badge text-bg-success">Создание товара</span>
+                </h2>
+                <a href="/orders" class="btn btn-secondary ms-auto bi bi-file-earmark-text"> Заказы</a>
+                <a href="/cart/items" class="btn btn-secondary bi bi-cart4"> Корзина</a>
+                <a href="/items" class="btn btn-secondary bi bi-arrow-left-square"> Главная</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Форма создания товара -->
+    <div class="row p-2 justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        Добавить новый товар
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/items/create}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">
+                                Название товара
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="title"
+                                   name="title"
+                                   placeholder="Введите название товара"
+                                   th:value="${item != null ? item.getTitle() : ''}"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="form-label fw-bold">
+                                Цена
+                            </label>
+                            <div class="input-group">
+                                <input type="number"
+                                       class="form-control"
+                                       id="price"
+                                       name="price"
+                                       placeholder="0.00"
+                                       step="0.01"
+                                       min="0"
+                                       th:value="${item != null ? item.getPrice() : ''}"
+                                       required>
+                                <span class="input-group-text">руб.</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold">
+                                Описание
+                            </label>
+                            <textarea class="form-control"
+                                      id="description"
+                                      name="description"
+                                      rows="4"
+                                      placeholder="Подробное описание товара"
+                                      th:text="${item != null ? item.getDescription() : ''}"
+                                      required></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label fw-bold">
+                                Изображение товара
+                            </label>
+                            <div class="card border-dashed" style="border: 2px dashed #dee2e6;">
+                                <div class="card-body text-center">
+                                    <div id="imagePreview" class="mb-3" style="display: none;">
+                                        <img id="preview" src="#" alt="Предпросмотр"
+                                             style="max-width: 200px; max-height: 200px;" class="rounded">
+                                    </div>
+
+
+                                    <i class="bi bi-cloud-upload" style="font-size: 48px; color: #6c757d;"></i>
+                                    <p class="mt-2 text-muted">Нажмите для выбора изображения</p>
+
+                                    <input type="file"
+                                           class="form-control"
+                                           id="image"
+                                           name="image"
+                                           accept="image/jpeg,image/png,image/webp,image/gif"
+                                           style="display: none;"
+                                           required>
+
+                                    <button type="button" class="btn btn-outline-secondary mt-2"
+                                            onclick="document.getElementById('image').click()">
+                                        <i class="bi bi-folder2-open"></i> Выбрать файл
+                                    </button>
+                                    <div class="form-text mt-2">Поддерживаемые форматы: JPG, PNG, WEBP, GIF.
+                                        Максимальный размер: 10 МБ
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки действий -->
+                        <div class="d-flex justify-content-between gap-2">
+                            <a href="/items" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Создать товар
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подсказка -->
+    <div class="row mt-3">
+        <div class="col text-center text-muted">
+            <small>
+                <i class="bi bi-info-circle"></i>
+                Все поля обязательны для заполнения. Изображение обязательно.
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для предпросмотра изображения -->
+<script>
+    // Показываем превью выбранного изображения
+    document.getElementById('image').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const previewDiv = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('preview');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewDiv.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            previewDiv.style.display = 'none';
+            previewImg.src = '#';
+        }
+    });
+
+    document.querySelector('form').addEventListener('submit', function (event) {
+        const title = document.getElementById('title').value.trim();
+        const price = parseFloat(document.getElementById('price').value);
+        const count = parseInt(document.getElementById('count').value);
+        const description = document.getElementById('description').value.trim();
+        const image = document.getElementById('image').files[0];
+
+        let errors = [];
+
+        if (!title) errors.push('Введите название товара');
+        if (isNaN(price) || price <= 0) errors.push('Введите корректную цену (больше 0)');
+        if (isNaN(count) || count < 0) errors.push('Количество не может быть отрицательным');
+
+        if (errors.length > 0) {
+            event.preventDefault();
+            alert('Пожалуйста, исправьте следующие ошибки:\n• ' + errors.join('\n• '));
+        }
+    });
+</script>
+
+<style>
+    .card-border-dashed {
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+    .card-border-dashed:hover {
+        border-color: #198754;
+        background-color: #f8fff4;
+    }
+
+    input:invalid {
+        border-color: #dc3545;
+    }
+
+    textarea:invalid {
+        border-color: #dc3545;
+    }
+
+    .form-control:focus, textarea:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>

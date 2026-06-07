@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDto;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
+
+import java.util.Objects;
 
 @Repository
 @AllArgsConstructor
@@ -47,6 +50,11 @@ public class ItemDao {
             where title like :search or description like :search
             """;
 
+    private static final String INSERT_ITEM_SQL = """
+            insert into items(title, description, img_path, price)
+            values(:title, :description, :img_path, :price);
+            """;
+
     public Mono<Long> getTotalRows(String search) {
         return template.getDatabaseClient()
                 .sql(GET_COUNT_ITEMS_SQL)
@@ -83,6 +91,18 @@ public class ItemDao {
                 .bind("order_id", orderId)
                 .map(ItemMapper.itemDtoRowMapper())
                 .all();
+    }
+
+    public Mono<Long> createItem(ItemDetailDto itemDto) {
+        return template.getDatabaseClient().sql(INSERT_ITEM_SQL)
+                .bind("title", itemDto.getTitle())
+                .bind("description", itemDto.getDescription())
+                .bind("img_path", itemDto.getImgPath())
+                .bind("price", itemDto.getPrice())
+                .filter(statement -> statement.returnGeneratedValues("id"))
+                .map(row -> Objects.requireNonNull(row.get("id", Long.class)))
+                .first();
+
     }
 
     private int getItemSort(String sort) {

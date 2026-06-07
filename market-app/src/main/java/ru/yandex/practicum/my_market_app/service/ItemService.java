@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
@@ -45,6 +46,10 @@ public class ItemService {
 
     public Mono<Void> changeItemAmount(Long itemId, String action) {
         return cartService.changeItemAmount(itemId, action).then();
+    }
+
+    public Mono<Long> createItem(ItemDetailDto itemDetailDto) {
+        return itemDao.createItem(itemDetailDto);
     }
 
     private List<List<ItemDetailDto>> cutItems(List<ItemDetailDto> itemPage) {

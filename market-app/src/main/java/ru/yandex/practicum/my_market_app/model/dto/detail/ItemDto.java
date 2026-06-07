@@ -1,15 +1,13 @@
 package ru.yandex.practicum.my_market_app.model.dto.detail;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;import lombok.*;
+import lombok.*;
 
+@Builder
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@EqualsAndHashCode
-@ToString
-public class ItemDetailDto {
+@NoArgsConstructor
+public class ItemDto {
 
     private Long id;
 
@@ -21,5 +19,4 @@ public class ItemDetailDto {
 
     private long price;
 
-    private int count;
 }

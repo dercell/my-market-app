@@ -27,7 +27,7 @@ public class CartService {
                 .collectList()
                 .flatMap(itemDtoList -> {
                     long totalSum = itemDtoList.stream()
-                            .mapToLong(itemDto -> itemDto.count() * itemDto.price()).sum();
+                            .mapToLong(itemDto -> itemDto.getCount() * itemDto.getPrice()).sum();
                     PaymentAvailability paymentAvailability = new PaymentAvailability(false, "Сервис недоступен");
                     return paymentService.getBalance()
                             .map(balance -> {

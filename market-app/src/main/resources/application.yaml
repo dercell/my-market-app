@@ -1,4 +1,18 @@
 spring:
+  webflux:
+    static-path-pattern: /images/**
+  web:
+    resources:
+      static-locations:
+        - classpath:/static/
+        - file:${FILE_LOCATION:./market-app/config/static}
+  data:
+    redis:
+      host: ${REDIS_URL:localhost}
+      port: ${REDIS_PORT:6379}
+  cache:
+    redis:
+      time-to-live: PT1M
   application:
     name: my-market-app
   r2dbc:

@@ -71,7 +71,7 @@ public class OrderService {
 
     private Mono<Order> saveOrderItems(Tuple2<List<ItemDetailDto>, Order> tuple) {
         List<OrderItems> orderItemsList = tuple.getT1().stream().map(itemDto -> OrderItems
-                .builder().itemId(itemDto.id()).orderId(tuple.getT2().getId()).count(itemDto.count()).build()
+                .builder().itemId(itemDto.getId()).orderId(tuple.getT2().getId()).count(itemDto.getCount()).build()
         ).toList();
         return orderItemRepository.saveAll(orderItemsList).then(Mono.just(tuple.getT2()));
     }
@@ -79,7 +79,7 @@ public class OrderService {
     private Mono<Order> saveOrder(List<ItemDetailDto> itemDetailDtoList) {
         Order newOrder = new Order();
         long totalSum = itemDetailDtoList.stream().mapToLong(
-                itemDto -> itemDto.price() * itemDto.count()
+                itemDto -> itemDto.getPrice() * itemDto.getCount()
         ).sum();
         newOrder.setTotalSum(totalSum);
 
