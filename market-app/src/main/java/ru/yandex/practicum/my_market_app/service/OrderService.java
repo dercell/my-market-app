@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
+import reactor.util.function.Tuple2;
+import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
+import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
 import ru.yandex.practicum.my_market_app.model.entity.OrderItems;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
@@ -24,22 +27,23 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ItemDao itemDao;
+    private final PaymentService paymentService;
 
-    public Mono<OrderPageDto> getOrderDetail(Long id) {
+    public Mono<OrderDetailDto> getOrderDetail(Long id) {
         Mono<Order> orderMono = orderRepository.findById(id);
-        Mono<List<ItemDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
+        Mono<List<ItemDetailDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
 
         return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(
-                new OrderPageDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()))
+                new OrderDetailDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()))
         );
     }
 
-    public Flux<OrderPageDto> getOrders() {
+    public Flux<OrderDetailDto> getOrders() {
         return orderRepository.findAll()
                 .flatMap(order -> itemDao
                         .getOrderItems(order.getId())
                         .collectList()
-                        .map(itemDtoList -> new OrderPageDto(order.getId(), itemDtoList, order.getTotalSum()))
+                        .map(itemDtoList -> new OrderDetailDto(order.getId(), itemDtoList, order.getTotalSum()))
                 );
     }
 
@@ -47,22 +51,38 @@ public class OrderService {
     public Mono<Long> buy() {
         return itemDao.getItemsInCart()
                 .collectList()
-                .zipWhen(itemDtoList -> {
-                    Order newOrder = new Order();
-                    long totalSum = itemDtoList.stream().mapToLong(
-                            itemDto -> itemDto.price() * itemDto.count()
-                    ).sum();
-                    newOrder.setTotalSum(totalSum);
-                    return orderRepository.save(newOrder).map(Order::getId);
-                })
-                .flatMap(tuple2 ->
-                        {
-                            List<OrderItems> orderItemsList = tuple2.getT1().stream().map(itemDto -> OrderItems
-                                    .builder().itemId(itemDto.id()).orderId(tuple2.getT2()).count(itemDto.count()).build()
-                            ).toList();
-                            return orderItemRepository.saveAll(orderItemsList).then(Mono.just(tuple2.getT2()));
-                        }
-                );
+                .zipWhen(this::saveOrder)
+                .flatMap(this::saveOrderItems)
+                .flatMap(this::chargeBalance);
+    }
 
+    private Mono<Long> chargeBalance(Order order) {
+        ChargeBalanceRequest request = new ChargeBalanceRequest(order.getTotalSum());
+        return paymentService.chargeBalance(request)
+                .flatMap(chargeStatus -> {
+                    if (chargeStatus.getIsSuccess()) {
+                        return Mono.just(order.getId());
+                    } else {
+                        return Mono.error(new PaymentServiceException(chargeStatus.getStatus()));
+                    }
+                });
+
+    }
+
+    private Mono<Order> saveOrderItems(Tuple2<List<ItemDetailDto>, Order> tuple) {
+        List<OrderItems> orderItemsList = tuple.getT1().stream().map(itemDto -> OrderItems
+                .builder().itemId(itemDto.id()).orderId(tuple.getT2().getId()).count(itemDto.count()).build()
+        ).toList();
+        return orderItemRepository.saveAll(orderItemsList).then(Mono.just(tuple.getT2()));
+    }
+
+    private Mono<Order> saveOrder(List<ItemDetailDto> itemDetailDtoList) {
+        Order newOrder = new Order();
+        long totalSum = itemDetailDtoList.stream().mapToLong(
+                itemDto -> itemDto.price() * itemDto.count()
+        ).sum();
+        newOrder.setTotalSum(totalSum);
+
+        return orderRepository.save(newOrder);
     }
 }

@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
 
@@ -30,7 +30,7 @@ public class ItemService {
                     return new PageDto(pageNumber, pageSize, hasPrevious, hasNext);
                 });
 
-        Mono<List<ItemDto>> pageItems = itemDao.getItemPage(search, pageNumber, pageSize, sort)
+        Mono<List<ItemDetailDto>> pageItems = itemDao.getItemPage(search, pageNumber, pageSize, sort)
                 .collectList();
 
         return Mono.zip(pageItems, paging)
@@ -39,7 +39,7 @@ public class ItemService {
 
     }
 
-    public Mono<ItemDto> getItem(Long id) {
+    public Mono<ItemDetailDto> getItem(Long id) {
         return itemDao.getItem(id);
     }
 
@@ -47,11 +47,11 @@ public class ItemService {
         return cartService.changeItemAmount(itemId, action).then();
     }
 
-    private List<List<ItemDto>> cutItems(List<ItemDto> itemPage) {
-        List<List<ItemDto>> result = new ArrayList<>();
-        List<ItemDto> chunk = new ArrayList<>(3);
+    private List<List<ItemDetailDto>> cutItems(List<ItemDetailDto> itemPage) {
+        List<List<ItemDetailDto>> result = new ArrayList<>();
+        List<ItemDetailDto> chunk = new ArrayList<>(3);
 
-        for (ItemDto i : itemPage) {
+        for (ItemDetailDto i : itemPage) {
             if (chunk.size() == 3) {
                 result.add(new ArrayList<>(chunk));
                 chunk.clear();

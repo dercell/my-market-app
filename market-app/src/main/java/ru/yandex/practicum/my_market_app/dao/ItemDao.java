@@ -5,7 +5,7 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
 @Repository
@@ -54,7 +54,7 @@ public class ItemDao {
                 .fetch().one().map(row -> (Long) row.get("cnt"));
     }
 
-    public Flux<ItemDto> getItemPage(String search, int pageNumber, int pageSize, String sort) {
+    public Flux<ItemDetailDto> getItemPage(String search, int pageNumber, int pageSize, String sort) {
         return template.getDatabaseClient()
                 .sql(GET_PAGE_SQL)
                 .bind("search", "%" + search + "%")
@@ -65,7 +65,7 @@ public class ItemDao {
                 .all();
     }
 
-    public Mono<ItemDto> getItem(Long itemId) {
+    public Mono<ItemDetailDto> getItem(Long itemId) {
         return template.getDatabaseClient()
                 .sql(GET_ITEM_DTO_SQL)
                 .bind("id", itemId)
@@ -73,12 +73,12 @@ public class ItemDao {
                 .first();
     }
 
-    public Flux<ItemDto> getItemsInCart() {
+    public Flux<ItemDetailDto> getItemsInCart() {
         return template.getDatabaseClient().sql(GET_CART_ITEMS_SQL)
                 .map(ItemMapper.itemDtoRowMapper()).all();
     }
 
-    public Flux<ItemDto> getOrderItems(Long orderId) {
+    public Flux<ItemDetailDto> getOrderItems(Long orderId) {
         return template.getDatabaseClient().sql(GET_ORDER_ITEMS_SQL)
                 .bind("order_id", orderId)
                 .map(ItemMapper.itemDtoRowMapper())

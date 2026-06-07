@@ -11,7 +11,7 @@
  */
 
 
-package ru.yandex.practicum.my_market_app.model.dto;
+package ru.yandex.practicum.my_market_app.model.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;

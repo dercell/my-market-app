@@ -9,8 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
 import ru.yandex.practicum.my_market_app.repository.OrderItemRepository;
 import ru.yandex.practicum.my_market_app.repository.OrderRepository;
@@ -43,26 +43,26 @@ class OrderServiceTest {
     @Test
     void getOrderDetail() {
         Order order = Order.builder().id(1L).totalSum(5L).build();
-        ItemDto itemDto = new ItemDto(1L, "item1", "", "", 10, 5);
+        ItemDetailDto itemDetailDto = new ItemDetailDto(1L, "item1", "", "", 10, 5);
 
-        List<ItemDto> orderItemsList = List.of(itemDto);
+        List<ItemDetailDto> orderItemsList = List.of(itemDetailDto);
 
         when(orderRepository.findById(1L)).thenReturn(Mono.just(order));
         when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItemsList));
 
-        OrderPageDto orderPageDto = orderService.getOrderDetail(1L).block();
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
 
-        assertEquals(order.getId(), orderPageDto.id());
-        assertEquals(order.getTotalSum(), orderPageDto.totalSum());
+        assertEquals(order.getId(), orderDetailDto.id());
+        assertEquals(order.getTotalSum(), orderDetailDto.totalSum());
     }
 
     @Test
     void getOrders() {
 
-        List<ItemDto> orderItems1 = List.of(new ItemDto(1L, "item1", "", "", 5L, 1));
-        List<ItemDto> orderItems2 = List.of(
-                new ItemDto(2L, "item2", "", "", 3L, 1),
-                new ItemDto(3L, "item3", "", "", 7L, 1)
+        List<ItemDetailDto> orderItems1 = List.of(new ItemDetailDto(1L, "item1", "", "", 5L, 1));
+        List<ItemDetailDto> orderItems2 = List.of(
+                new ItemDetailDto(2L, "item2", "", "", 3L, 1),
+                new ItemDetailDto(3L, "item3", "", "", 7L, 1)
         );
 
 
@@ -75,10 +75,10 @@ class OrderServiceTest {
         when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItems1));
         when(itemDao.getOrderItems(2L)).thenReturn(Flux.fromIterable(orderItems2));
 
-        List<OrderPageDto> orderPageDtos = orderService.getOrders().collectList().block();
+        List<OrderDetailDto> orderDetailDtos = orderService.getOrders().collectList().block();
 
-        assertEquals(orders.size(), orderPageDtos.size());
-        assertEquals(orders.getLast().getTotalSum(), orderPageDtos.getLast().totalSum());
+        assertEquals(orders.size(), orderDetailDtos.size());
+        assertEquals(orders.getLast().getTotalSum(), orderDetailDtos.getLast().totalSum());
     }
 
     @Test
@@ -87,9 +87,9 @@ class OrderServiceTest {
         Order newOrder = Order.builder().totalSum(10L).build();
         Order savedOrder = Order.builder().id(1L).totalSum(10L).build();
 
-        List<ItemDto> cartItems = List.of(
-                new ItemDto(2L, "item2", "", "", 3L, 1),
-                new ItemDto(3L, "item3", "", "", 7L, 1)
+        List<ItemDetailDto> cartItems = List.of(
+                new ItemDetailDto(2L, "item2", "", "", 3L, 1),
+                new ItemDetailDto(3L, "item3", "", "", 7L, 1)
         );
 
         when(itemDao.getItemsInCart()).thenReturn(Flux.fromIterable(cartItems));

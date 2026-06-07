@@ -9,8 +9,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.ItemController;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
@@ -36,8 +36,8 @@ class ItemControllerTest {
     void getItemPage() {
 
         ItemPageDto itemPageDto = new ItemPageDto(
-                List.of(List.of(new ItemDto(1L, "item1", "", "", 10, 5),
-                        new ItemDto(2L, "item2", "", "", 3, 1))),
+                List.of(List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
+                        new ItemDetailDto(2L, "item2", "", "", 3, 1))),
                 "",
                 "NO",
                 new PageDto(0, 5, false, false)

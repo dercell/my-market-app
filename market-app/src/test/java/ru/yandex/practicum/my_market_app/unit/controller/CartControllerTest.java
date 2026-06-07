@@ -10,8 +10,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.CartController;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
 import ru.yandex.practicum.my_market_app.service.CartService;
 
 
@@ -36,8 +36,8 @@ class CartControllerTest {
     @BeforeEach
     public void setUp() {
         cart = new CartPageDto(
-                List.of(new ItemDto(1L, "item1", "", "", 10, 5),
-                        new ItemDto(2L, "item2", "", "", 3, 1)),
+                List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
+                        new ItemDetailDto(2L, "item2", "", "", 3, 1)),
                 53L
         );
     }

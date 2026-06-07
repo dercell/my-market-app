@@ -9,8 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import java.util.List;
@@ -31,16 +31,16 @@ class ItemServiceIntegrationTest {
 
     @Test
     void getItem() {
-        ItemDto itemDto = itemService.getItem(4L).block();
+        ItemDetailDto itemDetailDto = itemService.getItem(4L).block();
 
-        assertEquals("AT-ST", itemDto.title());
+        assertEquals("AT-ST", itemDetailDto.title());
     }
 
     @Test
     void changeItemAmount() {
         itemService.changeItemAmount(4L, "PLUS").block();
 
-        ItemDto item = itemService.getItem(4L).block();
+        ItemDetailDto item = itemService.getItem(4L).block();
         assertEquals(1, item.count());
     }
 

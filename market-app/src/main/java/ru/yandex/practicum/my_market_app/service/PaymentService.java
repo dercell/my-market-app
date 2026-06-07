@@ -1,0 +1,59 @@
+package ru.yandex.practicum.my_market_app.service;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import ru.yandex.practicum.my_market_app.model.dto.payment.Balance;
+import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
+import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeStatus;
+import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.payment.Error;
+import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
+
+@Slf4j
+@Service
+@AllArgsConstructor
+public class PaymentService {
+
+    private final WebClient webClient;
+
+    /**
+     * Списание суммы заказа со счета
+     *
+     * <p><b>200</b> - Успешное списание средств
+     * <p><b>400</b> - Некорректный запрос
+     * <p><b>5XX</b> - Ошибки сервера
+     *
+     * @param chargeBalanceRequest Сумма для списания
+     * @return ChargeStatus
+     */
+    public Mono<ChargeStatus> chargeBalance(ChargeBalanceRequest chargeBalanceRequest) {
+        return webClient.post().uri("/chargeBalance")
+                .bodyValue(chargeBalanceRequest)
+                .retrieve()
+                .bodyToMono(ChargeStatus.class);
+    }
+
+
+    /**
+     * Получение текущего баланса
+     *
+     * <p><b>200</b> - Возвращает текущий баланс
+     * <p><b>400</b> - Некорректный запрос
+     * <p><b>5XX</b> - Ошибки сервера
+     *
+     * @return Balance
+     *
+     */
+    public Mono<Balance> getBalance() {
+        return webClient.get().uri("/balance")
+                .retrieve()
+                .bodyToMono(Balance.class);
+    }
+
+
+}

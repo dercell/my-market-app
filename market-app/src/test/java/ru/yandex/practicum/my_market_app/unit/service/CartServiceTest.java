@@ -13,8 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
 import ru.yandex.practicum.my_market_app.service.CartService;
@@ -51,8 +51,8 @@ class CartServiceTest {
     private static Stream<Arguments> changeAmountArgs() {
         return Stream.of(
                 Arguments.of(getGoodCart(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "PLUS", 1, 0),
-                Arguments.of(Flux.fromIterable(List.of(new ItemDto(1L, "item1", "", "", 10, 1))), Mono.empty(), "PLUS", 1, 0),
-                Arguments.of(Flux.fromIterable(List.of(new ItemDto(1L, "item1", "", "", 10, 2))), Mono.just(CartItem.builder().id(1L).itemId(1L).count(2).build()), "MINUS", 1, 0),
+                Arguments.of(Flux.fromIterable(List.of(new ItemDetailDto(1L, "item1", "", "", 10, 1))), Mono.empty(), "PLUS", 1, 0),
+                Arguments.of(Flux.fromIterable(List.of(new ItemDetailDto(1L, "item1", "", "", 10, 2))), Mono.just(CartItem.builder().id(1L).itemId(1L).count(2).build()), "MINUS", 1, 0),
                 Arguments.of(Flux.empty(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(1).build()), "MINUS", 0, 1),
                 Arguments.of(Flux.empty(), Mono.just(CartItem.builder().id(1L).itemId(1L).count(3).build()), "DELETE", 0, 1),
                 Arguments.of(Flux.empty(), Mono.empty(), "MINUS", 0, 0)
@@ -61,7 +61,7 @@ class CartServiceTest {
 
     @ParameterizedTest
     @MethodSource("carts")
-    void getCart(Flux<ItemDto> cart, Integer cartSize, Long totalSum) {
+    void getCart(Flux<ItemDetailDto> cart, Integer cartSize, Long totalSum) {
 
         when(itemDao.getItemsInCart()).thenReturn(cart);
 
@@ -74,7 +74,7 @@ class CartServiceTest {
 
     @ParameterizedTest
     @MethodSource("changeAmountArgs")
-    void changeItemAmount(Flux<ItemDto> cart, Mono<CartItem> cartItem, String action, int saveCallCnt, int deleteCallCnt) {
+    void changeItemAmount(Flux<ItemDetailDto> cart, Mono<CartItem> cartItem, String action, int saveCallCnt, int deleteCallCnt) {
 
         when(cartRepository.getCartItemByItemId(1L)).thenReturn(cartItem);
 
@@ -107,10 +107,10 @@ class CartServiceTest {
 
     }
 
-    private static Flux<ItemDto> getGoodCart() {
+    private static Flux<ItemDetailDto> getGoodCart() {
         return Flux.fromIterable(
-                List.of(new ItemDto(1L, "item1", "", "", 10, 2),
-                        new ItemDto(2L, "item2", "", "", 3, 5))
+                List.of(new ItemDetailDto(1L, "item1", "", "", 10, 2),
+                        new ItemDetailDto(2L, "item2", "", "", 3, 5))
         );
     }
 

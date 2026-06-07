@@ -17,6 +17,7 @@
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -28,7 +29,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-r2dbc</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -78,45 +78,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.yaml</include>
-                </includes>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>7.22.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-client</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>${project.basedir}/../api-spec.yaml</inputSpec>
-                            <generatorName>java</generatorName>
-                            <apiPackage>ru.yandex.practicum.my_market_app.api</apiPackage>
-                            <invokerPackage>ru.yandex.practicum.my_market_app.client</invokerPackage>
-                            <modelPackage>ru.yandex.practicum.my_market_app.model.dto</modelPackage>
-                            <configOptions>
-                                <interfaceOnly>false</interfaceOnly>
-                                <library>webclient</library>
-                                <reactive>true</reactive>
-                                <useJakartaEe>true</useJakartaEe>
-                                <openApiNullable>false</openApiNullable>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

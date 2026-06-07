@@ -1,6 +1,6 @@
-package ru.yandex.practicum.my_market_app.model.dto;
+package ru.yandex.practicum.my_market_app.model.dto.detail;
 
-public record ItemDto(
+public record ItemDetailDto(
         Long id,
         String title,
         String description,

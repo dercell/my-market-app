@@ -9,8 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.ItemPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.service.CartService;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
@@ -36,7 +36,7 @@ class ItemServiceTest {
     @Test
     void getItemsPage() {
 
-        List<ItemDto> cartPageDto = List.of(new ItemDto(1L, "item1", "", "", 1L, 3));
+        List<ItemDetailDto> cartPageDto = List.of(new ItemDetailDto(1L, "item1", "", "", 1L, 3));
 
         when(itemDao.getTotalRows(anyString())).thenReturn(Mono.just(1L));
         when(itemDao.getItemPage(anyString(), anyInt(), anyInt(), anyString()))
@@ -53,11 +53,11 @@ class ItemServiceTest {
 
     @Test
     void getItem() {
-        ItemDto testItemDto = new ItemDto(1L, "item1", "", "", 1L, 3);
-        when(itemDao.getItem(1L)).thenReturn(Mono.just(testItemDto));
-        ItemDto itemDto = itemService.getItem(1L).block();
+        ItemDetailDto testItemDetailDto = new ItemDetailDto(1L, "item1", "", "", 1L, 3);
+        when(itemDao.getItem(1L)).thenReturn(Mono.just(testItemDetailDto));
+        ItemDetailDto itemDetailDto = itemService.getItem(1L).block();
 
-        assertEquals(testItemDto.title(), itemDto.title());
+        assertEquals(testItemDetailDto.title(), itemDetailDto.title());
     }
 
     @Test

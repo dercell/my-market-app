@@ -10,7 +10,7 @@ import org.springframework.r2dbc.connection.init.ScriptUtils;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.util.List;
@@ -50,20 +50,20 @@ class OrderServiceIntegrationTest {
     @Test
     void getOrderDetail() {
 
-        OrderPageDto orderPageDto = orderService.getOrderDetail(2L).block();
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(2L).block();
 
-        assertEquals(2, orderPageDto.items().size());
-        assertEquals(15000L, orderPageDto.totalSum());
+        assertEquals(2, orderDetailDto.items().size());
+        assertEquals(15000L, orderDetailDto.totalSum());
     }
 
     @Test
     void getOrders() {
 
-        List<OrderPageDto> orderPageDtoList = orderService.getOrders().collectList().block();
+        List<OrderDetailDto> orderDetailDtoList = orderService.getOrders().collectList().block();
 
-        assertEquals(2, orderPageDtoList.size());
-        assertEquals(1, orderPageDtoList.getFirst().items().size());
-        assertEquals(2, orderPageDtoList.getLast().items().size());
+        assertEquals(2, orderDetailDtoList.size());
+        assertEquals(1, orderDetailDtoList.getFirst().items().size());
+        assertEquals(2, orderDetailDtoList.getLast().items().size());
 
     }
 
@@ -72,10 +72,10 @@ class OrderServiceIntegrationTest {
 
 
         Long newId = orderService.buy().block();
-        OrderPageDto orderPageDto = orderService.getOrderDetail(newId).block();
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(newId).block();
 
-        assertEquals(2, orderPageDto.items().size());
-        assertEquals(36000L, orderPageDto.totalSum());
+        assertEquals(2, orderDetailDto.items().size());
+        assertEquals(36000L, orderDetailDto.totalSum());
     }
 
 }

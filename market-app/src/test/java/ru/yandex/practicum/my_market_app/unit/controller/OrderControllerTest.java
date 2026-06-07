@@ -10,8 +10,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.OrderController;
-import ru.yandex.practicum.my_market_app.model.dto.ItemDto;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.util.List;
@@ -33,11 +33,11 @@ class OrderControllerTest {
     @Test
     void getOrders() {
 
-        Flux<OrderPageDto> orderPageDtoList = Flux.fromIterable(List.of(
-                new OrderPageDto(
+        Flux<OrderDetailDto> orderPageDtoList = Flux.fromIterable(List.of(
+                new OrderDetailDto(
                         1L,
-                        List.of(new ItemDto(1L, "item1", "", "", 10, 5),
-                                new ItemDto(2L, "item2", "", "", 3, 1)),
+                        List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
+                                new ItemDetailDto(2L, "item2", "", "", 3, 1)),
                         53L
                 )
         ));
@@ -58,13 +58,13 @@ class OrderControllerTest {
 
     @Test
     void getOrderDetail() {
-        OrderPageDto orderPageDto = new OrderPageDto(
+        OrderDetailDto orderDetailDto = new OrderDetailDto(
                 1L,
-                List.of(new ItemDto(1L, "item1", "", "", 10, 5),
-                        new ItemDto(2L, "item2", "", "", 3, 1)),
+                List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
+                        new ItemDetailDto(2L, "item2", "", "", 3, 1)),
                 53L
         );
-        when(orderService.getOrderDetail(1L)).thenReturn(Mono.just(orderPageDto));
+        when(orderService.getOrderDetail(1L)).thenReturn(Mono.just(orderDetailDto));
 
         webTestClient.get().uri(uriBuilder -> uriBuilder
                         .path("/orders/" + 1)

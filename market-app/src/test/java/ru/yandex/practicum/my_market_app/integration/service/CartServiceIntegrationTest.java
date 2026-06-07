@@ -12,8 +12,8 @@ import org.springframework.r2dbc.connection.init.ScriptUtils;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
-import ru.yandex.practicum.my_market_app.model.dto.OrderPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.service.CartService;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
@@ -69,8 +69,8 @@ class CartServiceIntegrationTest {
     void buy() {
         cartService.buy().block();
 
-        OrderPageDto orderPageDto = orderService.getOrderDetail(1L).block();
-        assertEquals(27000L, orderPageDto.totalSum());
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
+        assertEquals(27000L, orderDetailDto.totalSum());
     }
 
 }

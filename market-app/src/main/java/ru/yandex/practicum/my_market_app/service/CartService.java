@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
-import ru.yandex.practicum.my_market_app.model.dto.CartPageDto;
+import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
 
@@ -18,6 +19,7 @@ public class CartService {
     private final CartRepository cartRepository;
     private final ItemDao itemDao;
     private final OrderService orderService;
+    private final PaymentService paymentService;
 
     public Mono<CartPageDto> getCart() {
 
@@ -26,7 +28,23 @@ public class CartService {
                 .flatMap(itemDtoList -> {
                     long totalSum = itemDtoList.stream()
                             .mapToLong(itemDto -> itemDto.count() * itemDto.price()).sum();
-                    return Mono.just(new CartPageDto(itemDtoList, totalSum));
+                    PaymentAvailability paymentAvailability = new PaymentAvailability(false, "Сервис недоступен");
+                    return paymentService.getBalance()
+                            .map(balance -> {
+                                if (balance.getSum() >= totalSum) {
+                                    paymentAvailability.setAvailable(true);
+                                    paymentAvailability.setMessage("Всё в порядке");
+                                } else {
+                                    paymentAvailability.setMessage("Недостаточно денег на счёте");
+                                }
+                                return paymentAvailability;
+                            })
+                            .onErrorResume(ex -> {
+                                log.info(ex.getMessage());
+                                paymentAvailability.setMessage("Сервис оплаты недоступен");
+                                return Mono.just(paymentAvailability);
+                            })
+                            .map(pa -> new CartPageDto(itemDtoList, totalSum, pa));
                 });
     }
 

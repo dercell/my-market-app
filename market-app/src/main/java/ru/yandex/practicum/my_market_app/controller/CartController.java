@@ -1,6 +1,7 @@
 package ru.yandex.practicum.my_market_app.controller;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
@@ -11,7 +12,7 @@ import ru.yandex.practicum.my_market_app.service.CartService;
 import java.text.MessageFormat;
 import java.util.List;
 
-
+@Slf4j
 @Controller
 @AllArgsConstructor
 @RequestMapping
@@ -22,11 +23,12 @@ public class CartController {
 
     @GetMapping("/cart/items")
     public Mono<Rendering> getCartItems() {
-
         return cartService.getCart()
                 .map(cartPageDto -> Rendering.view("cart")
                         .modelAttribute("items", cartPageDto.itemsList())
                         .modelAttribute("total", cartPageDto.totalSum())
+                        .modelAttribute("canPay", cartPageDto.paymentAvailability().isAvailable())
+                        .modelAttribute("paymentUnavailableReason", cartPageDto.paymentAvailability().getMessage())
                         .build()
                 );
 
@@ -41,7 +43,10 @@ public class CartController {
         return cartService.changeItemAmount(form.getId(), form.getAction())
                 .map(cartPageDto -> Rendering.view("cart")
                         .modelAttribute("items", cartPageDto.itemsList())
-                        .modelAttribute("total", cartPageDto.totalSum()).build());
+                        .modelAttribute("total", cartPageDto.totalSum())
+                        .modelAttribute("canPay", cartPageDto.paymentAvailability().isAvailable())
+                        .modelAttribute("paymentUnavailableReason", cartPageDto.paymentAvailability().getMessage())
+                        .build());
     }
 
     @PostMapping("/buy")
