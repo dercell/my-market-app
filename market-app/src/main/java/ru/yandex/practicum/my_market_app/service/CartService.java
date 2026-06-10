@@ -4,12 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -46,6 +49,10 @@ public class CartService {
                             })
                             .map(pa -> new CartPageDto(itemDtoList, totalSum, pa));
                 });
+    }
+
+    public Flux<CartItem> getCartItemsByIdList(List<Long> itemIdList) {
+        return cartRepository.findAllByItemIdIn(itemIdList);
     }
 
     @Transactional

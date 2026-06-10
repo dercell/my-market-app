@@ -2,14 +2,18 @@ package ru.yandex.practicum.my_market_app.dao;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemInfoDto;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
+import java.text.MessageFormat;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Repository
 @AllArgsConstructor
@@ -24,10 +28,15 @@ public class ItemDao {
             where i.id = :id
             """;
 
-    private static final String GET_PAGE_SQL = """
-            select i.id, i.title, i.description, i.price, i.img_path, coalesce(c.count, 0) as count
+    private static final String GET_ITEMS_BY_ID_SQL = """
+            select i.id, i.title, i.description, i.price, i.img_path
             from items as i
-                     left join cart as c on i.id = c.item_id
+                where i.id in ({0})
+            """;
+
+    private static final String GET_ITEM_ID_PAGE_SQL = """
+            select i.id 
+            from items as i 
             where i.title like :search
                or i.description like :search
             order by :sort
@@ -62,18 +71,32 @@ public class ItemDao {
                 .fetch().one().map(row -> (Long) row.get("cnt"));
     }
 
-    public Flux<ItemDetailDto> getItemPage(String search, int pageNumber, int pageSize, String sort) {
+    public Flux<ItemInfoDto> getItemsByIdList(List<Long> idList) {
+        String inClause = idList.stream().map(id -> ":" + id)
+                .collect(Collectors.joining(", "));
+
+        DatabaseClient.GenericExecuteSpec sqlTemplate = template.getDatabaseClient()
+                .sql(MessageFormat.format(GET_ITEMS_BY_ID_SQL, inClause));
+        for (Long id : idList) {
+            sqlTemplate = sqlTemplate.bind(id.toString(), id);
+        }
+
+        return sqlTemplate.fetch().all().cast(ItemInfoDto.class);
+
+    }
+
+    public Flux<Long> getItemIdsPage(String search, int pageNumber, int pageSize, String sort) {
         return template.getDatabaseClient()
-                .sql(GET_PAGE_SQL)
+                .sql(GET_ITEM_ID_PAGE_SQL)
                 .bind("search", "%" + search + "%")
                 .bind("limit", pageSize)
                 .bind("offset", pageNumber * pageSize)
                 .bind("sort", getItemSort(sort))
-                .map(ItemMapper.itemDtoRowMapper())
+                .map(rs -> Objects.requireNonNull(rs.get("id", Long.class)))
                 .all();
     }
 
-    public Mono<ItemDetailDto> getItem(Long itemId) {
+    public Mono<ItemFullDto> getItem(Long itemId) {
         return template.getDatabaseClient()
                 .sql(GET_ITEM_DTO_SQL)
                 .bind("id", itemId)
@@ -81,19 +104,19 @@ public class ItemDao {
                 .first();
     }
 
-    public Flux<ItemDetailDto> getItemsInCart() {
+    public Flux<ItemFullDto> getItemsInCart() {
         return template.getDatabaseClient().sql(GET_CART_ITEMS_SQL)
                 .map(ItemMapper.itemDtoRowMapper()).all();
     }
 
-    public Flux<ItemDetailDto> getOrderItems(Long orderId) {
+    public Flux<ItemFullDto> getOrderItems(Long orderId) {
         return template.getDatabaseClient().sql(GET_ORDER_ITEMS_SQL)
                 .bind("order_id", orderId)
                 .map(ItemMapper.itemDtoRowMapper())
                 .all();
     }
 
-    public Mono<Long> createItem(ItemDetailDto itemDto) {
+    public Mono<Long> createItem(ItemFullDto itemDto) {
         return template.getDatabaseClient().sql(INSERT_ITEM_SQL)
                 .bind("title", itemDto.getTitle())
                 .bind("description", itemDto.getDescription())

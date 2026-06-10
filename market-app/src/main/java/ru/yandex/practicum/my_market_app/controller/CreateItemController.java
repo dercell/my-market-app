@@ -5,11 +5,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemInfoDto;
 import ru.yandex.practicum.my_market_app.service.ImageService;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
@@ -26,19 +25,19 @@ public class CreateItemController {
     @GetMapping
     public Mono<Rendering> getCreateItemForm() {
         return Mono.just(Rendering.view("new_item")
-                .modelAttribute("item", new ItemDto())
+                .modelAttribute("item", new ItemInfoDto())
                 .build());
     }
 
     @PostMapping
     public Mono<String> createItem(
-            @ModelAttribute @Valid ItemDetailDto itemDetailDto,
+            @ModelAttribute @Valid ItemFullDto itemFullDto,
             @RequestPart("image") Mono<FilePart> filePartMono
     ) {
         return imageService.uploadImage(filePartMono)
                 .flatMap(filename -> {
-                    itemDetailDto.setImgPath(filename);
-                    return itemService.createItem(itemDetailDto);
+                    itemFullDto.setImgPath(filename);
+                    return itemService.createItem(itemFullDto);
                 }).map(id -> MessageFormat.format("redirect:/items/{0}", id));
     }
 

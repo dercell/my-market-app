@@ -3,7 +3,7 @@ package ru.yandex.practicum.my_market_app.util.mappers;
 import io.r2dbc.spi.Readable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 
 import java.util.function.Function;
 
@@ -11,9 +11,9 @@ import java.util.function.Function;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
-    public static Function<? super Readable, ItemDetailDto> itemDtoRowMapper() {
+    public static Function<? super Readable, ItemFullDto> itemDtoRowMapper() {
         return row ->
-                new ItemDetailDto(
+                new ItemFullDto(
                         row.get("id", Long.class),
                         row.get("title", String.class),
                         row.get("description", String.class),

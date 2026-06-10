@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
 import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
 import ru.yandex.practicum.my_market_app.model.entity.OrderItems;
@@ -31,7 +31,7 @@ public class OrderService {
 
     public Mono<OrderDetailDto> getOrderDetail(Long id) {
         Mono<Order> orderMono = orderRepository.findById(id);
-        Mono<List<ItemDetailDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
+        Mono<List<ItemFullDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
 
         return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(
                 new OrderDetailDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()))
@@ -69,16 +69,16 @@ public class OrderService {
 
     }
 
-    private Mono<Order> saveOrderItems(Tuple2<List<ItemDetailDto>, Order> tuple) {
+    private Mono<Order> saveOrderItems(Tuple2<List<ItemFullDto>, Order> tuple) {
         List<OrderItems> orderItemsList = tuple.getT1().stream().map(itemDto -> OrderItems
                 .builder().itemId(itemDto.getId()).orderId(tuple.getT2().getId()).count(itemDto.getCount()).build()
         ).toList();
         return orderItemRepository.saveAll(orderItemsList).then(Mono.just(tuple.getT2()));
     }
 
-    private Mono<Order> saveOrder(List<ItemDetailDto> itemDetailDtoList) {
+    private Mono<Order> saveOrder(List<ItemFullDto> itemFullDtoList) {
         Order newOrder = new Order();
-        long totalSum = itemDetailDtoList.stream().mapToLong(
+        long totalSum = itemFullDtoList.stream().mapToLong(
                 itemDto -> itemDto.getPrice() * itemDto.getCount()
         ).sum();
         newOrder.setTotalSum(totalSum);
