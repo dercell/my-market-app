@@ -40,8 +40,8 @@ public class ItemService {
 
                     return itemDao.getItemIdsPage(search, pageNumber, pageSize, sort)
                             .collectList()
-                            .flatMap(this::prepareItems)
-                            .map(itemFullInfoList -> new ItemPageDto(cutItems(itemFullInfoList),
+                            .flatMap(this::collectAllItems)
+                            .map(allItems -> new ItemPageDto(cutItems(allItems),
                                     search, sort, paging));
                 });
     }
@@ -59,7 +59,7 @@ public class ItemService {
         return itemDao.createItem(itemFullDto);
     }
 
-    private Mono<List<ItemFullDto>> prepareItems(List<Long> idList) {
+    private Mono<List<ItemFullDto>> collectAllItems(List<Long> idList) {
         Mono<List<CartItem>> cartItemsMono = cartService.getCartItemsByIdList(idList).collectList();
 
         Mono<List<ItemInfoDto>> cachedItemsMono = Mono.fromCallable(() -> idList
@@ -72,11 +72,10 @@ public class ItemService {
 
         return Mono.zip(cartItemsMono, cachedItemsMono, missedItemsMono)
                 .map(tuple ->
-                        collectItems(idList, tuple.getT1(), tuple.getT2(), tuple.getT3()));
-
+                        unionAndEnrichWithAmount(idList, tuple.getT1(), tuple.getT2(), tuple.getT3()));
     }
 
-    private List<ItemFullDto> collectItems(
+    private List<ItemFullDto> unionAndEnrichWithAmount(
             List<Long> idList,
             List<CartItem> cartItems,
             List<ItemInfoDto> cachedItems,
