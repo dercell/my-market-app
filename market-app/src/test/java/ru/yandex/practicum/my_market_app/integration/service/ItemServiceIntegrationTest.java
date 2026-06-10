@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.yandex.practicum.my_market_app.config.MySqlContainer;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
@@ -31,17 +31,17 @@ class ItemServiceIntegrationTest {
 
     @Test
     void getItem() {
-        ItemDetailDto itemDetailDto = itemService.getItem(4L).block();
+        ItemFullDto itemFullDto = itemService.getItem(4L).block();
 
-        assertEquals("AT-ST", itemDetailDto.title());
+        assertEquals("AT-ST", itemFullDto.getTitle());
     }
 
     @Test
     void changeItemAmount() {
         itemService.changeItemAmount(4L, "PLUS").block();
 
-        ItemDetailDto item = itemService.getItem(4L).block();
-        assertEquals(1, item.count());
+        ItemFullDto item = itemService.getItem(4L).block();
+        assertEquals(1, item.getCount());
     }
 
     @Test

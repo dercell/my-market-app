@@ -1,25 +1,35 @@
 package ru.yandex.practicum.my_market_app.config;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemInfoDto;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+
 
 @Configuration
 public class RedisConfig {
 
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+    public ReactiveRedisTemplate<String, ItemInfoDto> reactiveRedisTemplate(ReactiveRedisConnectionFactory factory) {
+        JsonMapper jm = new JsonMapper();
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        JacksonJsonRedisSerializer<ItemInfoDto> valueSerializer = new JacksonJsonRedisSerializer<>(jm, ItemInfoDto.class);
 
-        template.setConnectionFactory(redisConnectionFactory);
+        RedisSerializationContext<String, ItemInfoDto> context =
+                RedisSerializationContext.<String, ItemInfoDto>newSerializationContext(keySerializer)
+                        .value(valueSerializer)
+                        .build();
 
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new JacksonJsonRedisSerializer<>(Object.class));
-        return template;
+        return new ReactiveRedisTemplate<>(factory, context);
     }
 
 }

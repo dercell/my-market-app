@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
 import ru.yandex.practicum.my_market_app.repository.OrderItemRepository;
@@ -43,9 +43,9 @@ class OrderServiceTest {
     @Test
     void getOrderDetail() {
         Order order = Order.builder().id(1L).totalSum(5L).build();
-        ItemDetailDto itemDetailDto = new ItemDetailDto(1L, "item1", "", "", 10, 5);
+        ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 10, 5);
 
-        List<ItemDetailDto> orderItemsList = List.of(itemDetailDto);
+        List<ItemFullDto> orderItemsList = List.of(itemFullDto);
 
         when(orderRepository.findById(1L)).thenReturn(Mono.just(order));
         when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItemsList));
@@ -59,10 +59,10 @@ class OrderServiceTest {
     @Test
     void getOrders() {
 
-        List<ItemDetailDto> orderItems1 = List.of(new ItemDetailDto(1L, "item1", "", "", 5L, 1));
-        List<ItemDetailDto> orderItems2 = List.of(
-                new ItemDetailDto(2L, "item2", "", "", 3L, 1),
-                new ItemDetailDto(3L, "item3", "", "", 7L, 1)
+        List<ItemFullDto> orderItems1 = List.of(new ItemFullDto(1L, "item1", "", "", 5L, 1));
+        List<ItemFullDto> orderItems2 = List.of(
+                new ItemFullDto(2L, "item2", "", "", 3L, 1),
+                new ItemFullDto(3L, "item3", "", "", 7L, 1)
         );
 
 
@@ -87,9 +87,9 @@ class OrderServiceTest {
         Order newOrder = Order.builder().totalSum(10L).build();
         Order savedOrder = Order.builder().id(1L).totalSum(10L).build();
 
-        List<ItemDetailDto> cartItems = List.of(
-                new ItemDetailDto(2L, "item2", "", "", 3L, 1),
-                new ItemDetailDto(3L, "item3", "", "", 7L, 1)
+        List<ItemFullDto> cartItems = List.of(
+                new ItemFullDto(2L, "item2", "", "", 3L, 1),
+                new ItemFullDto(3L, "item3", "", "", 7L, 1)
         );
 
         when(itemDao.getItemsInCart()).thenReturn(Flux.fromIterable(cartItems));

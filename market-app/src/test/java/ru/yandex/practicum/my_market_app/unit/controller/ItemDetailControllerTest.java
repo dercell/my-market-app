@@ -9,7 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.ItemDetailController;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,9 +29,9 @@ class ItemDetailControllerTest {
     @Test
     void getItem() {
 
-        ItemDetailDto itemDetailDto = new ItemDetailDto(1L, "item1", "", "", 5L, 1);
+        ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 5L, 1);
 
-        when(itemService.getItem(1L)).thenReturn(Mono.just(itemDetailDto));
+        when(itemService.getItem(1L)).thenReturn(Mono.just(itemFullDto));
 
         webTestClient.get().uri("/items/{id}", 1L)
                 .exchange()
@@ -48,9 +48,9 @@ class ItemDetailControllerTest {
     @Test
     void changeItemAmount() {
 
-        ItemDetailDto itemDetailDto = new ItemDetailDto(1L, "item1", "", "", 5L, 1);
+        ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 5L, 1);
 
-        when(itemService.getItem(1L)).thenReturn(Mono.just(itemDetailDto));
+        when(itemService.getItem(1L)).thenReturn(Mono.just(itemFullDto));
         when(itemService.changeItemAmount(1L, "PLUS")).thenReturn(Mono.empty());
 
         webTestClient.post().uri(uriBuilder -> uriBuilder

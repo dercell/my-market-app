@@ -81,7 +81,7 @@ public class ItemDao {
             sqlTemplate = sqlTemplate.bind(id.toString(), id);
         }
 
-        return sqlTemplate.fetch().all().cast(ItemInfoDto.class);
+        return sqlTemplate.map(ItemMapper.toStripedDto()).all();
 
     }
 

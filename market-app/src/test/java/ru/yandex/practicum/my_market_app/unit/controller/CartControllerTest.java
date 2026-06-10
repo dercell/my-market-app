@@ -11,7 +11,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.CartController;
 import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
+import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 import ru.yandex.practicum.my_market_app.service.CartService;
 
 
@@ -36,9 +37,9 @@ class CartControllerTest {
     @BeforeEach
     public void setUp() {
         cart = new CartPageDto(
-                List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
-                        new ItemDetailDto(2L, "item2", "", "", 3, 1)),
-                53L
+                List.of(new ItemFullDto(1L, "item1", "", "", 10, 5),
+                        new ItemFullDto(2L, "item2", "", "", 3, 1)),
+                53L, new PaymentAvailability(true, "")
         );
     }
 

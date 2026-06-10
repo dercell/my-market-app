@@ -55,6 +55,10 @@ public class CartService {
         return cartRepository.findAllByItemIdIn(itemIdList);
     }
 
+    public Mono<CartItem> getCartItemByItemId(Long itemId){
+        return cartRepository.getCartItemByItemId(itemId);
+    }
+
     @Transactional
     public Mono<CartPageDto> changeItemAmount(Long itemId, String action) {
         Mono<Void> changeAmountMono;

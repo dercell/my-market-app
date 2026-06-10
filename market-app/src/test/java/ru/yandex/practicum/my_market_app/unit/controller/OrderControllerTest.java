@@ -10,7 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.controller.OrderController;
-import ru.yandex.practicum.my_market_app.model.dto.detail.ItemDetailDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
@@ -36,8 +36,8 @@ class OrderControllerTest {
         Flux<OrderDetailDto> orderPageDtoList = Flux.fromIterable(List.of(
                 new OrderDetailDto(
                         1L,
-                        List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
-                                new ItemDetailDto(2L, "item2", "", "", 3, 1)),
+                        List.of(new ItemFullDto(1L, "item1", "", "", 10, 5),
+                                new ItemFullDto(2L, "item2", "", "", 3, 1)),
                         53L
                 )
         ));
@@ -60,8 +60,8 @@ class OrderControllerTest {
     void getOrderDetail() {
         OrderDetailDto orderDetailDto = new OrderDetailDto(
                 1L,
-                List.of(new ItemDetailDto(1L, "item1", "", "", 10, 5),
-                        new ItemDetailDto(2L, "item2", "", "", 3, 1)),
+                List.of(new ItemFullDto(1L, "item1", "", "", 10, 5),
+                        new ItemFullDto(2L, "item2", "", "", 3, 1)),
                 53L
         );
         when(orderService.getOrderDetail(1L)).thenReturn(Mono.just(orderDetailDto));
