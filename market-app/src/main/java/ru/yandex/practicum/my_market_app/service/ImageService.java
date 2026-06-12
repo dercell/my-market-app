@@ -6,7 +6,6 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.util.exception.StorageException;
 

@@ -22,9 +22,8 @@ public class ItemDao {
     private final R2dbcEntityTemplate template;
 
     private static final String GET_ITEM_DTO_SQL = """
-            select i.id, i.title, i.description, i.price, i.img_path, coalesce(c.count, 0) as count
+            select i.id, i.title, i.description, i.price, i.img_path
             from items as i
-                     left join cart as c on i.id = c.item_id
             where i.id = :id
             """;
 
@@ -39,7 +38,7 @@ public class ItemDao {
             from items as i 
             where i.title like :search
                or i.description like :search
-            order by :sort
+            order by {0}
             limit :limit offset :offset
             """;
 
@@ -87,26 +86,25 @@ public class ItemDao {
 
     public Flux<Long> getItemIdsPage(String search, int pageNumber, int pageSize, String sort) {
         return template.getDatabaseClient()
-                .sql(GET_ITEM_ID_PAGE_SQL)
+                .sql(MessageFormat.format(GET_ITEM_ID_PAGE_SQL, getItemSort(sort)))
                 .bind("search", "%" + search + "%")
                 .bind("limit", pageSize)
                 .bind("offset", pageNumber * pageSize)
-                .bind("sort", getItemSort(sort))
                 .map(rs -> Objects.requireNonNull(rs.get("id", Long.class)))
                 .all();
     }
 
-    public Mono<ItemFullDto> getItem(Long itemId) {
+    public Mono<ItemInfoDto> getItem(Long itemId) {
         return template.getDatabaseClient()
                 .sql(GET_ITEM_DTO_SQL)
                 .bind("id", itemId)
-                .map(ItemMapper.itemDtoRowMapper())
+                .map(ItemMapper.toStripedDto())
                 .first();
     }
 
-    public Flux<ItemFullDto> getItemsInCart() {
+    public Flux<ItemInfoDto> getItemsInCart() {
         return template.getDatabaseClient().sql(GET_CART_ITEMS_SQL)
-                .map(ItemMapper.itemDtoRowMapper()).all();
+                .map(ItemMapper.toStripedDto()).all();
     }
 
     public Flux<ItemFullDto> getOrderItems(Long orderId) {
@@ -128,11 +126,11 @@ public class ItemDao {
 
     }
 
-    private int getItemSort(String sort) {
+    private String getItemSort(String sort) {
         return switch (sort) {
-            case "ALPHA" -> 2;
-            case "PRICE" -> 4;
-            default -> 1;
+            case "ALPHA" -> "i.title";
+            case "PRICE" -> "i.price";
+            default -> "i.id";
         };
     }
 

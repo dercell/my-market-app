@@ -13,9 +13,6 @@ import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -38,7 +35,7 @@ public class ItemService {
 
     private Mono<ItemInfoDto> loadFromDatabaseAndCache(Long id) {
         return itemDao.getItem(id)
-                .map(ItemMapper::stripeItemFull)
+                .doOnNext(item -> log.info("load item from database {} ", item))
                 .flatMap(itemInfoDto -> itemCacheService
                         .cacheItem(itemInfoDto)
                         .thenReturn(itemInfoDto));
@@ -63,70 +60,17 @@ public class ItemService {
                     PageDto paging = new PageDto(pageNumber, pageSize, hasPrevious, hasNext);
                     return itemDao.getItemIdsPage(search, pageNumber, pageSize, sort)
                             .collectList()
-                            .flatMap(this::collectAllItems)
+                            .flatMap(idList ->
+                                    cartService.getCartItemsByIdList(idList).collectList()
+                                            .flatMap(cartItemsList -> itemCacheService
+                                                    .collectAllItems(idList, cartItemsList)
+                                            )
+                            )
                             .map(allItems -> new ItemPageDto(cutItems(allItems),
                                     search, sort, paging));
                 });
     }
 
-    private Mono<List<ItemFullDto>> collectAllItems(List<Long> idList) {
-        Mono<List<CartItem>> cartItemsMono = cartService.getCartItemsByIdList(idList).collectList();
-
-        Mono<List<ItemInfoDto>> cachedItemsMono = itemCacheService.getCachedItems(idList);
-
-        Mono<List<ItemInfoDto>> missedItemsMono = cachedItemsMono
-                .flatMap(cachedItems -> getMissedItems(cachedItems, idList))
-                .doOnNext(el -> log.info("missedItem: " + el));
-
-        return Mono.zip(cartItemsMono, cachedItemsMono, missedItemsMono)
-                .map(tuple ->
-                        unionAndEnrichWithAmount(idList, tuple.getT1(), tuple.getT2(), tuple.getT3())
-                );
-    }
-
-    private List<ItemFullDto> unionAndEnrichWithAmount(
-            List<Long> idList,
-            List<CartItem> cartItems,
-            List<ItemInfoDto> cachedItems,
-            List<ItemInfoDto> missedItems) {
-
-        List<ItemInfoDto> allItems = Stream.concat(cachedItems.stream(), missedItems.stream()).toList();
-
-        Map<Long, CartItem> cartItemMap = cartItems.stream()
-                .collect(Collectors.toMap(CartItem::getItemId, Function.identity()));
-
-        Map<Long, ItemInfoDto> itemsMap = allItems.stream()
-                .collect(Collectors.toMap(ItemInfoDto::getId, Function.identity()));
-
-        return idList.stream()
-                .map(id -> {
-                    ItemInfoDto item = itemsMap.get(id);
-                    Integer count = Optional.ofNullable(cartItemMap.get(id))
-                            .map(CartItem::getCount).orElse(0);
-
-                    return new ItemFullDto(item, count);
-                }).toList();
-    }
-
-    private Mono<List<ItemInfoDto>> getMissedItems(List<ItemInfoDto> cachedItems,
-                                                   List<Long> idList
-    ) {
-
-        Set<Long> cachedIds = cachedItems.stream()
-                .filter(Objects::nonNull)
-                .map(ItemInfoDto::getId).collect(Collectors.toSet());
-
-        List<Long> missedIds = idList.stream()
-                .filter(id -> !cachedIds.contains(id))
-                .toList();
-
-        if (missedIds.isEmpty()) {
-            return Mono.just(List.of());
-        }
-        return itemDao.getItemsByIdList(missedIds)
-                .flatMap(itemCacheService::cacheItem)
-                .collectList();
-    }
 
     private List<List<ItemFullDto>> cutItems(List<ItemFullDto> itemPage) {
         List<List<ItemFullDto>> result = new ArrayList<>();

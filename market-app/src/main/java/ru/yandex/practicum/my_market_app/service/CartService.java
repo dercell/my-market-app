@@ -10,7 +10,6 @@ import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
 import ru.yandex.practicum.my_market_app.repository.CartRepository;
-import ru.yandex.practicum.my_market_app.dao.ItemDao;
 
 import java.util.List;
 
@@ -20,14 +19,18 @@ import java.util.List;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final ItemDao itemDao;
     private final OrderService orderService;
     private final PaymentService paymentService;
+    private final ItemCacheService itemCacheService;
 
     public Mono<CartPageDto> getCart() {
 
-        return itemDao.getItemsInCart()
+        return cartRepository.findAll()
                 .collectList()
+                .flatMap(cartItems -> {
+                    List<Long> itemIds = cartItems.stream().map(CartItem::getItemId).toList();
+                    return itemCacheService.collectAllItems(itemIds, cartItems);
+                })
                 .flatMap(itemDtoList -> {
                     long totalSum = itemDtoList.stream()
                             .mapToLong(itemDto -> itemDto.getCount() * itemDto.getPrice()).sum();
@@ -55,7 +58,7 @@ public class CartService {
         return cartRepository.findAllByItemIdIn(itemIdList);
     }
 
-    public Mono<CartItem> getCartItemByItemId(Long itemId){
+    public Mono<CartItem> getCartItemByItemId(Long itemId) {
         return cartRepository.getCartItemByItemId(itemId);
     }
 
