@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderItemDto;
 import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
 import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
@@ -28,10 +29,11 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final ItemDao itemDao;
     private final PaymentService paymentService;
+    private final CartService cartService;
 
     public Mono<OrderDetailDto> getOrderDetail(Long id) {
         Mono<Order> orderMono = orderRepository.findById(id);
-        Mono<List<ItemFullDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
+        Mono<List<OrderItemDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
 
         return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(
                 new OrderDetailDto(tuple2.getT1().getId(), tuple2.getT2(), tuple2.getT1().getTotalSum()))
@@ -49,12 +51,12 @@ public class OrderService {
 
     @Transactional
     public Mono<Long> buy() {
-//        return itemDao.getItemsInCart()
-//                .collectList()
-//                .zipWhen(this::saveOrder)
-//                .flatMap(this::saveOrderItems)
-//                .flatMap(this::chargeBalance);
-        return Mono.just(2L);
+        return cartService.getCartItems()
+                .zipWhen(this::saveOrder)
+                .flatMap(this::saveOrderItems)
+                .flatMap(this::chargeBalance)
+                .flatMap(newOrderId -> cartService.clearCart().thenReturn(newOrderId));
+
     }
 
     private Mono<Long> chargeBalance(Order order) {

@@ -46,8 +46,7 @@ public class ImageService {
                 String fileExtension = StringUtils.getFilenameExtension(filePart.filename());
                 String newFilename = String.join("", uuid.toString(), ".", fileExtension);
                 Path newFilePath = path.resolve(newFilename);
-                log.info("BASE PATH====>" + newFilePath.toAbsolutePath());
-                log.info("FILENAME====>" + newFilename);
+
                 return filePart.transferTo(newFilePath).then(Mono.just(newFilename));
             } catch (IOException e) {
                 log.error("Error in uploadImage {}", e.getMessage(), e);

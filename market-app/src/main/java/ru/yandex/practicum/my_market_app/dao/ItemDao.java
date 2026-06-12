@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemInfoDto;
+import ru.yandex.practicum.my_market_app.model.dto.detail.OrderItemDto;
 import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
 import java.text.MessageFormat;
@@ -48,7 +49,7 @@ public class ItemDao {
             """;
 
     private static final String GET_ORDER_ITEMS_SQL = """
-            select i.id, i.title, i.description, i.price, i.img_path, coalesce(oi.count, 0) as count
+            select i.id, i.title, i.price, coalesce(oi.count, 0) as count
             from items as i join order_items as oi on i.id = oi.item_id
             where oi.order_id = :order_id
             """;
@@ -107,10 +108,10 @@ public class ItemDao {
                 .map(ItemMapper.toStripedDto()).all();
     }
 
-    public Flux<ItemFullDto> getOrderItems(Long orderId) {
+    public Flux<OrderItemDto> getOrderItems(Long orderId) {
         return template.getDatabaseClient().sql(GET_ORDER_ITEMS_SQL)
                 .bind("order_id", orderId)
-                .map(ItemMapper.itemDtoRowMapper())
+                .map(ItemMapper.toOrderItemDto())
                 .all();
     }
 

@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @NoArgsConstructor
 public class Error {
 
-  private @Nullable String message;
+  private String message;
 
   /**
    * Get message
@@ -40,12 +40,12 @@ public class Error {
 
   @Schema(name = "message", example = "Сообщение об ошибке", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("message")
-  public @Nullable String getMessage() {
+  public  String getMessage() {
     return message;
   }
 
   @JsonProperty("message")
-  public void setMessage(@Nullable String message) {
+  public void setMessage(String message) {
     this.message = message;
   }
 

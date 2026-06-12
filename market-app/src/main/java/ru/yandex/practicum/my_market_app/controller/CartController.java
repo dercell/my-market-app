@@ -8,6 +8,7 @@ import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.CartService;
+import ru.yandex.practicum.my_market_app.service.OrderService;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 public class CartController {
 
     private final CartService cartService;
+    private final OrderService orderService;
 
 
     @GetMapping("/cart/items")
@@ -51,7 +53,7 @@ public class CartController {
 
     @PostMapping("/buy")
     public Mono<String> buy() {
-        return cartService.buy()
+        return orderService.buy()
                 .map(id -> MessageFormat.format("redirect:/orders/{0}?newOrder=true", id));
     }
 

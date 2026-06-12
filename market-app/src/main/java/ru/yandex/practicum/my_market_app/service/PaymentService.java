@@ -2,17 +2,12 @@ package ru.yandex.practicum.my_market_app.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
 import ru.yandex.practicum.my_market_app.model.dto.payment.Balance;
 import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
 import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeStatus;
 import reactor.core.publisher.Mono;
-import ru.yandex.practicum.my_market_app.model.dto.payment.Error;
-import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
 
 @Slf4j
 @Service

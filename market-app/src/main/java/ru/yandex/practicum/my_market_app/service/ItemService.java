@@ -10,7 +10,6 @@ import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
-import ru.yandex.practicum.my_market_app.util.mappers.ItemMapper;
 
 import java.util.*;
 

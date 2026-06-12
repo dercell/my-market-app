@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
@@ -19,22 +20,19 @@ import java.util.List;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final OrderService orderService;
     private final PaymentService paymentService;
     private final ItemCacheService itemCacheService;
 
     public Mono<CartPageDto> getCart() {
 
-        return cartRepository.findAll()
-                .collectList()
-                .flatMap(cartItems -> {
-                    List<Long> itemIds = cartItems.stream().map(CartItem::getItemId).toList();
-                    return itemCacheService.collectAllItems(itemIds, cartItems);
-                })
+        return getCartItems()
                 .flatMap(itemDtoList -> {
+
                     long totalSum = itemDtoList.stream()
                             .mapToLong(itemDto -> itemDto.getCount() * itemDto.getPrice()).sum();
+
                     PaymentAvailability paymentAvailability = new PaymentAvailability(false, "Сервис недоступен");
+
                     return paymentService.getBalance()
                             .map(balance -> {
                                 if (balance.getSum() >= totalSum) {
@@ -51,6 +49,18 @@ public class CartService {
                                 return Mono.just(paymentAvailability);
                             })
                             .map(pa -> new CartPageDto(itemDtoList, totalSum, pa));
+                });
+    }
+
+    public Mono<List<ItemFullDto>> getCartItems() {
+        return cartRepository.findAll()
+                .collectList()
+                .flatMap(cartItems -> {
+                    if(cartItems.isEmpty()){
+                        return Mono.just(List.of());
+                    }
+                    List<Long> itemIds = cartItems.stream().map(CartItem::getItemId).toList();
+                    return itemCacheService.collectAllItems(itemIds, cartItems);
                 });
     }
 
@@ -98,9 +108,7 @@ public class CartService {
     }
 
     @Transactional
-    public Mono<Long> buy() {
-        return orderService.buy()
-                .flatMap(newOrderId -> cartRepository
-                        .deleteAll().thenReturn(newOrderId));
+    public Mono<Void> clearCart() {
+        return cartRepository.deleteAll();
     }
 }
