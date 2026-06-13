@@ -26,3 +26,6 @@ server:
 logging:
   level:
     ru.yandex.practicum.my_market_app: debug
+
+payment-service:
+  base-url: ${PAYMENT_SERVICE_URL:http://localhost:8090}

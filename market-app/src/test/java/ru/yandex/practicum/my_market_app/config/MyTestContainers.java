@@ -45,7 +45,7 @@ public final class MyTestContainers {
         String url = "http://" + paymentServiceContainer.getHost()
                 + ":" + paymentServiceContainer.getMappedPort(8090);
 
-        registry.add("payment-servie.base-url", () -> url);
+        registry.add("payment-service.base-url", () -> url);
     }
 
     static {

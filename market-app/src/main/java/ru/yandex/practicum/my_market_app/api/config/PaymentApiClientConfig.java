@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class PaymentApiClientConfig {
 
-    @Value("${payment-servie.base-url:http://localhost:8090}")
+    @Value("${payment-service.base-url:http://localhost:8090}")
     private String baseUrl;
 
     @Bean
