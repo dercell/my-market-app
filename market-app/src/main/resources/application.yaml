@@ -1,6 +1,4 @@
 spring:
-  webflux:
-    static-path-pattern: /images/**
   web:
     resources:
       static-locations:
@@ -8,7 +6,7 @@ spring:
         - file:${FILE_LOCATION:./market-app/config/static}
   data:
     redis:
-      host: ${REDIS_URL:localhost}
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
   cache:
     redis:
@@ -16,11 +14,14 @@ spring:
   application:
     name: my-market-app
   r2dbc:
-    url: ${DB_URL:r2dbc:mysql://localhost:3306/my_market_db}
+    url: r2dbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:my_market_db}
     username: ${DB_USER:yp_user}
     password: ${DB_PASSWORD:yp_password}
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:my_market_db}
+    user: ${DB_USER:yp_user}
+    password: ${DB_PASSWORD:yp_password}
 server:
   port: ${APP_PORT:8080}
 logging:
