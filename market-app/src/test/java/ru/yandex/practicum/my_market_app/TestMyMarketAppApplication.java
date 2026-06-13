@@ -1,13 +1,12 @@
 package ru.yandex.practicum.my_market_app;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.cache.annotation.EnableCaching;
-import ru.yandex.practicum.my_market_app.config.MySqlContainer;
+import ru.yandex.practicum.my_market_app.config.MyTestContainers;
 
 public class TestMyMarketAppApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.from(MyMarketAppApplication::main).with(MySqlContainer.class).run(args);
+		SpringApplication.from(MyMarketAppApplication::main).with(MyTestContainers.class).run(args);
 	}
 
 }

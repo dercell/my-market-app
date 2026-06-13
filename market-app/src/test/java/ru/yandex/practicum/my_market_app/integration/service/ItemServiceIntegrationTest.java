@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.yandex.practicum.my_market_app.config.MySqlContainer;
+import ru.yandex.practicum.my_market_app.config.MyTestContainers;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemInfoDto;
 import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 @Tag("service")
 @Testcontainers
-@ImportTestcontainers(MySqlContainer.class)
+@ImportTestcontainers(MyTestContainers.class)
 @SpringBootTest
 class ItemServiceIntegrationTest {
 

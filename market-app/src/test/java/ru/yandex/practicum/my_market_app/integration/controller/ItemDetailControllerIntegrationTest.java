@@ -9,7 +9,7 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.yandex.practicum.my_market_app.config.MySqlContainer;
+import ru.yandex.practicum.my_market_app.config.MyTestContainers;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("controller")
 @Tag("integration")
 @Testcontainers
-@ImportTestcontainers(MySqlContainer.class)
+@ImportTestcontainers(MyTestContainers.class)
 @AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ItemDetailControllerIntegrationTest {

@@ -84,4 +84,5 @@ mvnw.cmd clean test -Dgroups=service
 ```
 
 
-docker run --name redis-server -it --rm -p 6379:6379 redis:8.2.7-bookworm 
+docker run --name redis-server -it --rm -p 6379:6379 redis:8.2.7-bookworm
+docker build -f ./payment-service/Dockerfile -t payment-service:latest .

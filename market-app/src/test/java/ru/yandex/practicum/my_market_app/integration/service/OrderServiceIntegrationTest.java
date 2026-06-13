@@ -9,7 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.r2dbc.connection.init.ScriptUtils;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.yandex.practicum.my_market_app.config.MySqlContainer;
+import ru.yandex.practicum.my_market_app.config.MyTestContainers;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.service.OrderService;
 
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 @Tag("service")
 @Testcontainers
-@ImportTestcontainers(MySqlContainer.class)
+@ImportTestcontainers(MyTestContainers.class)
 @SpringBootTest
 class OrderServiceIntegrationTest {
 
@@ -29,6 +29,8 @@ class OrderServiceIntegrationTest {
 
     @Autowired
     private DatabaseClient databaseClient;
+
+
 
     @BeforeEach
     void setUp() {
@@ -69,7 +71,6 @@ class OrderServiceIntegrationTest {
 
     @Test
     void buy() {
-
 
         Long newId = orderService.buy().block();
         OrderDetailDto orderDetailDto = orderService.getOrderDetail(newId).block();

@@ -11,18 +11,19 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.r2dbc.connection.init.ScriptUtils;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.yandex.practicum.my_market_app.config.MySqlContainer;
+import ru.yandex.practicum.my_market_app.config.MyTestContainers;
 import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
-import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
+import ru.yandex.practicum.my_market_app.model.entity.CartItem;
 import ru.yandex.practicum.my_market_app.service.CartService;
-import ru.yandex.practicum.my_market_app.service.OrderService;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("integration")
 @Tag("service")
 @Testcontainers
-@ImportTestcontainers(MySqlContainer.class)
+@ImportTestcontainers(MyTestContainers.class)
 @SpringBootTest
 class CartServiceIntegrationTest {
 
@@ -31,9 +32,6 @@ class CartServiceIntegrationTest {
 
     @Autowired
     private DatabaseClient databaseClient;
-
-    @Autowired
-    private OrderService orderService;
 
     @BeforeEach
     void setUp() {
@@ -65,12 +63,21 @@ class CartServiceIntegrationTest {
         assertEquals(totalSum, cartPageDto.totalSum());
     }
 
-//    @Test
-//    void buy() {
-//        cartService.buy().block();
-//
-//        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
-//        assertEquals(27000L, orderDetailDto.totalSum());
-//    }
+    @Test
+    void getCartItemByItemId() {
+        CartItem result = cartService.getCartItemByItemId(1L).block();
+
+        assertEquals(1L, result.getItemId());
+        assertEquals(1, result.getCount());
+    }
+
+    @Test
+    void getCartItemsByIdList() {
+        List<Long> itemIds = List.of(1L, 2L);
+
+        List<CartItem> result = cartService.getCartItemsByIdList(itemIds).collectList().block();
+
+        assertEquals(2, result.size());
+    }
 
 }
