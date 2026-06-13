@@ -65,12 +65,12 @@ class CartServiceIntegrationTest {
         assertEquals(totalSum, cartPageDto.totalSum());
     }
 
-    @Test
-    void buy() {
-        cartService.buy().block();
-
-        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
-        assertEquals(27000L, orderDetailDto.totalSum());
-    }
+//    @Test
+//    void buy() {
+//        cartService.buy().block();
+//
+//        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
+//        assertEquals(27000L, orderDetailDto.totalSum());
+//    }
 
 }

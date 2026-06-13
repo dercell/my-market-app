@@ -3,52 +3,35 @@ package ru.yandex.practicum.my_market_app.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import ru.yandex.practicum.my_market_app.model.dto.payment.Balance;
-import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
-import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeStatus;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.api.PaymentAdapter;
+import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class PaymentService {
 
-    private final WebClient webClient;
+    private final PaymentAdapter paymentAdapter;
 
-    /**
-     * Списание суммы заказа со счета
-     *
-     * <p><b>200</b> - Успешное списание средств
-     * <p><b>400</b> - Некорректный запрос
-     * <p><b>5XX</b> - Ошибки сервера
-     *
-     * @param chargeBalanceRequest Сумма для списания
-     * @return ChargeStatus
-     */
-    public Mono<ChargeStatus> chargeBalance(ChargeBalanceRequest chargeBalanceRequest) {
-        return webClient.post().uri("/chargeBalance")
-                .bodyValue(chargeBalanceRequest)
-                .retrieve()
-                .bodyToMono(ChargeStatus.class);
+    public Mono<PaymentAvailability> checkBalance(long totalSum) {
+
+        PaymentAvailability paymentAvailability = new PaymentAvailability(false, "Сервис недоступен");
+        return paymentAdapter.getBalance()
+                .map(balance -> {
+                    if (balance.getSum() >= totalSum) {
+                        paymentAvailability.setAvailable(true);
+                        paymentAvailability.setMessage("Всё в порядке");
+                    } else {
+                        paymentAvailability.setMessage("Недостаточно денег на счёте");
+                    }
+                    return paymentAvailability;
+                })
+                .onErrorResume(ex -> {
+                    log.info(ex.getMessage());
+                    paymentAvailability.setMessage("Сервис оплаты недоступен");
+                    return Mono.just(paymentAvailability);
+                });
     }
-
-
-    /**
-     * Получение текущего баланса
-     *
-     * <p><b>200</b> - Возвращает текущий баланс
-     * <p><b>400</b> - Некорректный запрос
-     * <p><b>5XX</b> - Ошибки сервера
-     *
-     * @return Balance
-     *
-     */
-    public Mono<Balance> getBalance() {
-        return webClient.get().uri("/balance")
-                .retrieve()
-                .bodyToMono(Balance.class);
-    }
-
 
 }

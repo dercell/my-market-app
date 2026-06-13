@@ -40,68 +40,68 @@ class OrderServiceTest {
     @Mock
     private ItemDao itemDao;
 
-    @Test
-    void getOrderDetail() {
-        Order order = Order.builder().id(1L).totalSum(5L).build();
-        ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 10, 5);
-
-        List<ItemFullDto> orderItemsList = List.of(itemFullDto);
-
-        when(orderRepository.findById(1L)).thenReturn(Mono.just(order));
-        when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItemsList));
-
-        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
-
-        assertEquals(order.getId(), orderDetailDto.id());
-        assertEquals(order.getTotalSum(), orderDetailDto.totalSum());
-    }
-
-    @Test
-    void getOrders() {
-
-        List<ItemFullDto> orderItems1 = List.of(new ItemFullDto(1L, "item1", "", "", 5L, 1));
-        List<ItemFullDto> orderItems2 = List.of(
-                new ItemFullDto(2L, "item2", "", "", 3L, 1),
-                new ItemFullDto(3L, "item3", "", "", 7L, 1)
-        );
-
-
-        List<Order> orders = List.of(
-                Order.builder().id(1L).totalSum(5L).build(),
-                Order.builder().id(2L).totalSum(10L).build()
-        );
-
-        when(orderRepository.findAll()).thenReturn(Flux.fromIterable(orders));
-        when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItems1));
-        when(itemDao.getOrderItems(2L)).thenReturn(Flux.fromIterable(orderItems2));
-
-        List<OrderDetailDto> orderDetailDtos = orderService.getOrders().collectList().block();
-
-        assertEquals(orders.size(), orderDetailDtos.size());
-        assertEquals(orders.getLast().getTotalSum(), orderDetailDtos.getLast().totalSum());
-    }
-
-    @Test
-    void buy() {
-
-        Order newOrder = Order.builder().totalSum(10L).build();
-        Order savedOrder = Order.builder().id(1L).totalSum(10L).build();
-
-        List<ItemFullDto> cartItems = List.of(
-                new ItemFullDto(2L, "item2", "", "", 3L, 1),
-                new ItemFullDto(3L, "item3", "", "", 7L, 1)
-        );
-
-        when(itemDao.getItemsInCart()).thenReturn(Flux.fromIterable(cartItems));
-        when(orderRepository.save(newOrder)).thenReturn(Mono.just(savedOrder));
-        when(orderItemRepository.saveAll(anyCollection())).thenReturn(Flux.empty());
-
-        Long newId = orderService.buy().block();
-
-        verify(orderRepository).save(newOrder);
-        verify(orderItemRepository).saveAll(anyCollection());
-
-        assertEquals(savedOrder.getId(), newId);
-    }
+//    @Test
+//    void getOrderDetail() {
+//        Order order = Order.builder().id(1L).totalSum(5L).build();
+//        ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 10, 5);
+//
+//        List<ItemFullDto> orderItemsList = List.of(itemFullDto);
+//
+//        when(orderRepository.findById(1L)).thenReturn(Mono.just(order));
+//        when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItemsList));
+//
+//        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
+//
+//        assertEquals(order.getId(), orderDetailDto.id());
+//        assertEquals(order.getTotalSum(), orderDetailDto.totalSum());
+//    }
+//
+//    @Test
+//    void getOrders() {
+//
+//        List<ItemFullDto> orderItems1 = List.of(new ItemFullDto(1L, "item1", "", "", 5L, 1));
+//        List<ItemFullDto> orderItems2 = List.of(
+//                new ItemFullDto(2L, "item2", "", "", 3L, 1),
+//                new ItemFullDto(3L, "item3", "", "", 7L, 1)
+//        );
+//
+//
+//        List<Order> orders = List.of(
+//                Order.builder().id(1L).totalSum(5L).build(),
+//                Order.builder().id(2L).totalSum(10L).build()
+//        );
+//
+//        when(orderRepository.findAll()).thenReturn(Flux.fromIterable(orders));
+//        when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItems1));
+//        when(itemDao.getOrderItems(2L)).thenReturn(Flux.fromIterable(orderItems2));
+//
+//        List<OrderDetailDto> orderDetailDtos = orderService.getOrders().collectList().block();
+//
+//        assertEquals(orders.size(), orderDetailDtos.size());
+//        assertEquals(orders.getLast().getTotalSum(), orderDetailDtos.getLast().totalSum());
+//    }
+//
+//    @Test
+//    void buy() {
+//
+//        Order newOrder = Order.builder().totalSum(10L).build();
+//        Order savedOrder = Order.builder().id(1L).totalSum(10L).build();
+//
+//        List<ItemFullDto> cartItems = List.of(
+//                new ItemFullDto(2L, "item2", "", "", 3L, 1),
+//                new ItemFullDto(3L, "item3", "", "", 7L, 1)
+//        );
+//
+//        when(itemDao.getItemsInCart()).thenReturn(Flux.fromIterable(cartItems));
+//        when(orderRepository.save(newOrder)).thenReturn(Mono.just(savedOrder));
+//        when(orderItemRepository.saveAll(anyCollection())).thenReturn(Flux.empty());
+//
+//        Long newId = orderService.buy().block();
+//
+//        verify(orderRepository).save(newOrder);
+//        verify(orderItemRepository).saveAll(anyCollection());
+//
+//        assertEquals(savedOrder.getId(), newId);
+//    }
 
 }

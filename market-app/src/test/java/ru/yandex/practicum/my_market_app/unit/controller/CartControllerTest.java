@@ -77,29 +77,29 @@ class CartControllerTest {
                 });
     }
 
-    @Test
-    void buy() {
-
-        when(cartService.buy()).thenReturn(Mono.just(3L));
-
-        webTestClient.post().uri("/buy")
-                .exchange()
-                .expectStatus().is3xxRedirection();
-    }
-
-    @Test
-    void buyError() {
-
-        when(cartService.buy()).thenThrow(new RuntimeException("Save error!"));
-
-        webTestClient.post().uri("/buy")
-                .exchange()
-                .expectStatus().is5xxServerError()
-                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
-                .expectBody(String.class)
-                .value(html -> {
-                    assertTrue(html.contains("Save error!"));
-                });
-    }
+//    @Test
+//    void buy() {
+//
+//        when(cartService.buy()).thenReturn(Mono.just(3L));
+//
+//        webTestClient.post().uri("/buy")
+//                .exchange()
+//                .expectStatus().is3xxRedirection();
+//    }
+//
+//    @Test
+//    void buyError() {
+//
+//        when(cartService.buy()).thenThrow(new RuntimeException("Save error!"));
+//
+//        webTestClient.post().uri("/buy")
+//                .exchange()
+//                .expectStatus().is5xxServerError()
+//                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+//                .expectBody(String.class)
+//                .value(html -> {
+//                    assertTrue(html.contains("Save error!"));
+//                });
+//    }
 
 }

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import ru.yandex.practicum.my_market_app.api.PaymentAdapter;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderItemDto;
 import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
 import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
@@ -28,7 +29,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ItemDao itemDao;
-    private final PaymentService paymentService;
+    private final PaymentAdapter paymentAdapter;
     private final CartService cartService;
 
     public Mono<OrderDetailDto> getOrderDetail(Long id) {
@@ -61,7 +62,7 @@ public class OrderService {
 
     private Mono<Long> chargeBalance(Order order) {
         ChargeBalanceRequest request = new ChargeBalanceRequest(order.getTotalSum());
-        return paymentService.chargeBalance(request)
+        return paymentAdapter.chargeBalance(request)
                 .flatMap(chargeStatus -> {
                     if (chargeStatus.getIsSuccess()) {
                         return Mono.just(order.getId());

@@ -103,11 +103,6 @@ public class ItemDao {
                 .first();
     }
 
-    public Flux<ItemInfoDto> getItemsInCart() {
-        return template.getDatabaseClient().sql(GET_CART_ITEMS_SQL)
-                .map(ItemMapper.toStripedDto()).all();
-    }
-
     public Flux<OrderItemDto> getOrderItems(Long orderId) {
         return template.getDatabaseClient().sql(GET_ORDER_ITEMS_SQL)
                 .bind("order_id", orderId)
