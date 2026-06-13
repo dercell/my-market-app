@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.api.PaymentAdapter;
+import ru.yandex.practicum.my_market_app.model.dto.payment.ChargeBalanceRequest;
 import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
+import ru.yandex.practicum.my_market_app.util.exception.PaymentServiceException;
 
 @Slf4j
 @Service
@@ -31,6 +33,18 @@ public class PaymentService {
                     log.info(ex.getMessage());
                     paymentAvailability.setMessage("Сервис оплаты недоступен");
                     return Mono.just(paymentAvailability);
+                });
+    }
+
+    public Mono<Long> chargeOrderBalance(Long orderId, long totalSum){
+        ChargeBalanceRequest request = new ChargeBalanceRequest(totalSum);
+        return paymentAdapter.chargeBalance(request)
+                .flatMap(chargeStatus -> {
+                    if (chargeStatus.getIsSuccess()) {
+                        return Mono.just(orderId);
+                    } else {
+                        return Mono.error(new PaymentServiceException(chargeStatus.getStatus()));
+                    }
                 });
     }
 
