@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -14,6 +16,7 @@ import ru.yandex.practicum.my_market_app.model.dto.page.CartPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.payment.PaymentAvailability;
 import ru.yandex.practicum.my_market_app.service.CartService;
+import ru.yandex.practicum.my_market_app.service.OrderService;
 
 
 import java.util.List;
@@ -24,6 +27,7 @@ import static org.mockito.Mockito.when;
 @Tag("controller")
 @Tag("unit")
 @WebFluxTest(CartController.class)
+@EnableCaching
 class CartControllerTest {
 
     @Autowired
@@ -31,6 +35,12 @@ class CartControllerTest {
 
     @MockitoBean
     private CartService cartService;
+
+    @MockitoBean
+    private OrderService orderService;
+
+    @MockitoBean
+    private CacheManager cacheManager;
 
     private CartPageDto cart;
 
@@ -77,29 +87,29 @@ class CartControllerTest {
                 });
     }
 
-//    @Test
-//    void buy() {
-//
-//        when(cartService.buy()).thenReturn(Mono.just(3L));
-//
-//        webTestClient.post().uri("/buy")
-//                .exchange()
-//                .expectStatus().is3xxRedirection();
-//    }
-//
-//    @Test
-//    void buyError() {
-//
-//        when(cartService.buy()).thenThrow(new RuntimeException("Save error!"));
-//
-//        webTestClient.post().uri("/buy")
-//                .exchange()
-//                .expectStatus().is5xxServerError()
-//                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
-//                .expectBody(String.class)
-//                .value(html -> {
-//                    assertTrue(html.contains("Save error!"));
-//                });
-//    }
+    @Test
+    void buy() {
+
+        when(orderService.buy()).thenReturn(Mono.just(3L));
+
+        webTestClient.post().uri("/buy")
+                .exchange()
+                .expectStatus().is3xxRedirection();
+    }
+
+    @Test
+    void buyError() {
+
+        when(orderService.buy()).thenThrow(new RuntimeException("Save error!"));
+
+        webTestClient.post().uri("/buy")
+                .exchange()
+                .expectStatus().is5xxServerError()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("Save error!"));
+                });
+    }
 
 }
