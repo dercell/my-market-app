@@ -35,6 +35,7 @@ class CartServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        databaseClient.sql("delete from cart").fetch().first().block();
         databaseClient.sql("insert into cart(id, item_id, count) values (1,1,1), (2,2,2)").fetch().first().block();
     }
 
