@@ -67,14 +67,6 @@ public class AccountApiController {
                 exampleString = "{ \"balance\" : 15000 }";
             }
 
-            if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                exampleString = "{ \"message\" : \"Сообщение об ошибке\" }";
-            }
-
-            if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                exampleString = "{ \"message\" : \"Сообщение об ошибке\" }";
-            }
-
             ApiUtil.getExampleResponse(exchange, MediaType.valueOf("application/json"), exampleString);
         }
 

@@ -166,7 +166,7 @@ class CartServiceTest {
     @Test
     void clearCart() {
         when(cartRepository.deleteAll()).thenReturn(Mono.empty());
-        cartService.clearCart();
+        cartService.clearCart().block();
 
         verify(cartRepository).deleteAll();
 

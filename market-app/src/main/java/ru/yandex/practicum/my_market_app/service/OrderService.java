@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderItemDto;
 
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
@@ -51,22 +50,27 @@ public class OrderService {
     @Transactional
     public Mono<Long> buy() {
         return cartService.getCartItems()
-                .zipWhen(this::saveOrder)
-                .flatMap(this::saveOrderItems)
-                .flatMap(this::chargeBalance)
-                .flatMap(newOrderId -> cartService.clearCart().thenReturn(newOrderId));
-
+                .flatMap(items -> {
+                    if (items.isEmpty()) {
+                        return Mono.error(new IllegalArgumentException("Корзина пуста"));
+                    }
+                    return saveOrder(items)
+                            .flatMap(order -> saveOrderItems(items, order))
+                            .flatMap(this::chargeBalance)
+                            .flatMap(newOrderId -> cartService.clearCart()
+                                    .thenReturn(newOrderId));
+                });
     }
 
     private Mono<Long> chargeBalance(Order order) {
         return paymentService.chargeOrderBalance(order.getId(), order.getTotalSum());
     }
 
-    private Mono<Order> saveOrderItems(Tuple2<List<ItemFullDto>, Order> tuple) {
-        List<OrderItems> orderItemsList = tuple.getT1().stream().map(itemDto -> OrderItems
-                .builder().itemId(itemDto.getId()).orderId(tuple.getT2().getId()).count(itemDto.getCount()).build()
+    private Mono<Order> saveOrderItems(List<ItemFullDto> items, Order order) {
+        List<OrderItems> orderItemsList = items.stream().map(itemDto -> OrderItems
+                .builder().itemId(itemDto.getId()).orderId(order.getId()).count(itemDto.getCount()).build()
         ).toList();
-        return orderItemRepository.saveAll(orderItemsList).then(Mono.just(tuple.getT2()));
+        return orderItemRepository.saveAll(orderItemsList).then(Mono.just(order));
     }
 
     private Mono<Order> saveOrder(List<ItemFullDto> itemFullDtoList) {

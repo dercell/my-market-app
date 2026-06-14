@@ -28,30 +28,33 @@ public class ImageService {
 
     public Mono<String> uploadImage(Mono<FilePart> filePartMono) {
         return filePartMono.flatMap(filePart -> {
-            try {
-                Path path = Paths.get(BASE_PATH).normalize();
 
-                String contentType = Optional.ofNullable(filePart.headers().getContentType())
-                        .map(MimeType::toString).orElse("empty filetype");
+            Path path = Paths.get(BASE_PATH).normalize();
 
-                if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
-                    return Mono.error(new StorageException("Unsupported file type: " + contentType));
-                }
+            String contentType = Optional.ofNullable(filePart.headers().getContentType())
+                    .map(MimeType::toString).orElse("empty filetype");
 
-                if (!Files.exists(path)) {
-                    Files.createDirectories(path);
-                }
-                UUID uuid = UUID.randomUUID();
-
-                String fileExtension = StringUtils.getFilenameExtension(filePart.filename());
-                String newFilename = String.join("", uuid.toString(), ".", fileExtension);
-                Path newFilePath = path.resolve(newFilename);
-
-                return filePart.transferTo(newFilePath).then(Mono.just(newFilename));
-            } catch (IOException e) {
-                log.error("Error in uploadImage {}", e.getMessage(), e);
-                return Mono.error(e);
+            if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
+                return Mono.error(new StorageException("Unsupported file type: " + contentType));
             }
+
+            UUID uuid = UUID.randomUUID();
+
+            String fileExtension = StringUtils.getFilenameExtension(filePart.filename());
+            String newFilename = String.join("", uuid.toString(), ".", fileExtension);
+            Path newFilePath = path.resolve(newFilename);
+
+            return Mono.fromCallable(() -> {
+                try {
+                    if (!Files.exists(path)) {
+                        Files.createDirectories(path);
+                    }
+                } catch (IOException e) {
+                    log.error("Error in uploadImage {}", e.getMessage(), e);
+                    return Mono.error(e);
+                }
+                return path;
+            }).flatMap(p -> filePart.transferTo(newFilePath).then(Mono.just(newFilename)));
         });
     }
 

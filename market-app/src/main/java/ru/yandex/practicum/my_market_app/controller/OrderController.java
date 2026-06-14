@@ -17,10 +17,12 @@ public class OrderController {
 
     @GetMapping
     public Mono<Rendering> getOrders() {
-        return Mono.just(Rendering.view("orders")
-                .modelAttribute("orders", orderService.getOrders())
-                .build()
-        );
+        return orderService.getOrders()
+                .collectList()
+                .map(orderList ->
+                        Rendering.view("orders")
+                                .modelAttribute("orders", orderList)
+                                .build());
     }
 
     @GetMapping("/{id}")
