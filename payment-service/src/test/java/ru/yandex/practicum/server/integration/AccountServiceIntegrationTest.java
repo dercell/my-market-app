@@ -23,13 +23,13 @@ class AccountServiceIntegrationTest {
 
     @BeforeEach
     void setUp(){
-        accountService.getCurrentBalance().setSum(100000L);
+        accountService.getCurrentBalance().setBalance(100000L);
     }
 
     @Test
     void getCurrentBalanace() {
 
-        assertEquals(100000L, accountService.getCurrentBalance().getSum());
+        assertEquals(100000L, accountService.getCurrentBalance().getBalance());
     }
 
     @Test
@@ -37,7 +37,7 @@ class AccountServiceIntegrationTest {
         ChargeBalanceRequest request = new ChargeBalanceRequest(50000L);
         accountService.chargeBalance(Mono.just(request)).block();
 
-        assertEquals(50000L, accountService.getCurrentBalance().getSum());
+        assertEquals(50000L, accountService.getCurrentBalance().getBalance());
     }
 
     @Test

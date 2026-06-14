@@ -27,7 +27,7 @@ class AccountServiceTest {
 
     @Test
     void getCurrentBalanace() {
-        assertEquals(100000L, accountService.getCurrentBalance().getSum());
+        assertEquals(100000L, accountService.getCurrentBalance().getBalance());
     }
 
     @Test
@@ -35,7 +35,7 @@ class AccountServiceTest {
         ChargeBalanceRequest request = new ChargeBalanceRequest(50000L);
         accountService.chargeBalance(Mono.just(request)).block();
 
-        assertEquals(50000L, accountService.getCurrentBalance().getSum());
+        assertEquals(50000L, accountService.getCurrentBalance().getBalance());
     }
 
     @Test

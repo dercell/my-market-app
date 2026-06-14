@@ -11,7 +11,7 @@ import ru.yandex.practicum.my_market_app.model.dto.detail.OrderItemDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.model.entity.Order;
-import ru.yandex.practicum.my_market_app.model.entity.OrderItems;
+import ru.yandex.practicum.my_market_app.model.entity.OrderItem;
 import ru.yandex.practicum.my_market_app.dao.ItemDao;
 import ru.yandex.practicum.my_market_app.repository.OrderItemRepository;
 import ru.yandex.practicum.my_market_app.repository.OrderRepository;
@@ -67,10 +67,10 @@ public class OrderService {
     }
 
     private Mono<Order> saveOrderItems(List<ItemFullDto> items, Order order) {
-        List<OrderItems> orderItemsList = items.stream().map(itemDto -> OrderItems
+        List<OrderItem> orderItemList = items.stream().map(itemDto -> OrderItem
                 .builder().itemId(itemDto.getId()).orderId(order.getId()).count(itemDto.getCount()).build()
         ).toList();
-        return orderItemRepository.saveAll(orderItemsList).then(Mono.just(order));
+        return orderItemRepository.saveAll(orderItemList).then(Mono.just(order));
     }
 
     private Mono<Order> saveOrder(List<ItemFullDto> itemFullDtoList) {

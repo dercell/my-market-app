@@ -58,4 +58,21 @@ class ItemDetailControllerIntegrationTest {
 
     }
 
+    @Test
+    void invalidAction() {
+
+        webTestClient.post().uri(uriBuilder -> uriBuilder
+                        .path("/items/" + 1)
+                        .queryParam("action", "EEEE")
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("<span>Действие EEEE не поддерживается</span>"));
+                });
+
+    }
+
 }

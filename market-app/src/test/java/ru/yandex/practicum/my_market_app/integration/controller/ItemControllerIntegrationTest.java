@@ -56,4 +56,23 @@ class ItemControllerIntegrationTest {
                 .expectStatus().is3xxRedirection();
     }
 
+    @Test
+    void ivalidAction() {
+        webTestClient.post().uri(uriBuilder -> uriBuilder.path("/items")
+                        .queryParam("id", "1")
+                        .queryParam("search", "")
+                        .queryParam("pageNumber", "0")
+                        .queryParam("pageSize", "5")
+                        .queryParam("sort", "NO")
+                        .queryParam("action", "MULTIPLY").build()
+                )
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("<span>Действие MULTIPLY не поддерживается</span>"));
+                });
+    }
+
 }

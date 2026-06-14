@@ -9,9 +9,9 @@ import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.CartService;
 import ru.yandex.practicum.my_market_app.service.OrderService;
+import ru.yandex.practicum.my_market_app.util.validation.itemform.ItemFormValid;
 
 import java.text.MessageFormat;
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -37,10 +37,8 @@ public class CartController {
     }
 
     @PostMapping("/cart/items")
-    public Mono<Rendering> changeItemAmount(@ModelAttribute ItemForm form) {
-        if (form.getId() == null || !List.of("MINUS", "PLUS", "DELETE").contains(form.getAction())) {
-            return Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
-        }
+    public Mono<Rendering> changeItemAmount(@ModelAttribute @ItemFormValid ItemForm form) {
+
 
         return cartService.changeItemAmount(form.getId(), form.getAction())
                 .map(cartPageDto -> Rendering.view("cart")

@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @AllArgsConstructor
 public class Balance {
 
-    private AtomicLong sum = new AtomicLong(0);
+    private AtomicLong balance = new AtomicLong(0);
 
-    public Balance(Long sum) {
-        this.sum.set(sum);
+    public Balance(Long balance) {
+        this.balance.set(balance);
     }
 
     /**
@@ -33,13 +33,13 @@ public class Balance {
     @NotNull
     @Schema(name = "balance", example = "15000", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("balance")
-    public Long getSum() {
-        return sum.get();
+    public Long getBalance() {
+        return balance.get();
     }
 
     @JsonProperty("balance")
-    public void setSum(Long balance) {
-        this.sum.set(balance);
+    public void setBalance(Long balance) {
+        this.balance.set(balance);
     }
 
 }

@@ -79,6 +79,21 @@ class CartControllerIntegrationTest {
     }
 
     @Test
+    void invalidAction() {
+        webTestClient.post().uri(uriBuilder -> uriBuilder.path("/cart/items")
+                        .queryParam("id", "2")
+                        .queryParam("action", "FOOOO").build()
+                )
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("<span>Действие FOOOO не поддерживается</span>"));
+                });
+    }
+
+    @Test
     void buy() {
         webTestClient.post().uri("/buy")
                 .exchange()

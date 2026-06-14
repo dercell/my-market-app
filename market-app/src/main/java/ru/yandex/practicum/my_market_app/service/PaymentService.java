@@ -21,7 +21,7 @@ public class PaymentService {
         PaymentAvailability paymentAvailability = new PaymentAvailability(false, "Сервис недоступен");
         return paymentAdapter.getBalance()
                 .map(balance -> {
-                    if (balance.getSum() >= totalSum) {
+                    if (balance.getBalance() >= totalSum) {
                         paymentAvailability.setAvailable(true);
                         paymentAvailability.setMessage("Всё в порядке");
                     } else {

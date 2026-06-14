@@ -14,9 +14,6 @@ import ru.yandex.practicum.server.domain.ChargeStatus;
 import ru.yandex.practicum.server.domain.Error;
 import ru.yandex.practicum.server.service.AccountService;
 
-import java.util.List;
-import java.util.Map;
-
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,7 +32,7 @@ class AccountApiControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        accountService.getCurrentBalance().setSum(100000L);
+        accountService.getCurrentBalance().setBalance(100000L);
     }
 
     @Test
@@ -46,7 +43,7 @@ class AccountApiControllerIntegrationTest {
                 .expectStatus()
                 .isOk()
                 .expectBody(Balance.class)
-                .value(balance -> assertEquals(100000L, balance.getSum()));
+                .value(balance -> assertEquals(100000L, balance.getBalance()));
     }
 
     @Test

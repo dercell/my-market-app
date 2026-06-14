@@ -81,7 +81,7 @@ public class ItemDao {
             sqlTemplate = sqlTemplate.bind(id.toString(), id);
         }
 
-        return sqlTemplate.map(ItemMapper.toStripedDto()).all();
+        return sqlTemplate.map(ItemMapper.toStrippedDto()).all();
 
     }
 
@@ -99,7 +99,7 @@ public class ItemDao {
         return template.getDatabaseClient()
                 .sql(GET_ITEM_DTO_SQL)
                 .bind("id", itemId)
-                .map(ItemMapper.toStripedDto())
+                .map(ItemMapper.toStrippedDto())
                 .first();
     }
 

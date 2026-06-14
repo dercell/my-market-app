@@ -9,9 +9,9 @@ import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
 import ru.yandex.practicum.my_market_app.service.ItemService;
+import ru.yandex.practicum.my_market_app.util.validation.itemform.ItemFormValid;
 
 import java.text.MessageFormat;
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -40,11 +40,8 @@ public class ItemController {
 
     @PostMapping
     public Mono<String> changeItemAmount(
-            @ModelAttribute ItemForm form
+            @ModelAttribute @ItemFormValid ItemForm form
     ) {
-        if (form.getId() == null || !List.of("MINUS", "PLUS", "DELETE").contains(form.getAction())) {
-            return Mono.error(new IllegalArgumentException("Item ID and Action must be specified"));
-        }
 
         return itemService.changeItemAmount(form.getId(), form.getAction())
                 .thenReturn(MessageFormat.format("redirect:/items?search={0}&sort={1}&pageNumber={2}&pageSize={3}",

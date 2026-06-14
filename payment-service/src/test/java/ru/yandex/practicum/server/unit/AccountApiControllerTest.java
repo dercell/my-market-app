@@ -38,7 +38,7 @@ class AccountApiControllerTest {
                 .expectStatus()
                 .isOk()
                 .expectBody(Balance.class)
-                .value(balance -> assertEquals(10L, balance.getSum()));
+                .value(balance -> assertEquals(10L, balance.getBalance()));
     }
 
     @Test

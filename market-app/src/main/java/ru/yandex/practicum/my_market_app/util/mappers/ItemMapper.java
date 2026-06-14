@@ -35,7 +35,7 @@ public class ItemMapper {
                 );
     }
 
-    public static Function<? super Readable, ItemInfoDto> toStripedDto() {
+    public static Function<? super Readable, ItemInfoDto> toStrippedDto() {
         return row ->
                 new ItemInfoDto(
                         row.get("id", Long.class),
@@ -44,16 +44,6 @@ public class ItemMapper {
                         row.get("img_path", String.class),
                         row.get("price", Long.class)
                 );
-    }
-
-    public static ItemInfoDto stripeItemFull(ItemFullDto full) {
-        return ItemInfoDto.builder()
-                .id(full.getId())
-                .title(full.getTitle())
-                .description(full.getDescription())
-                .imgPath(full.getImgPath())
-                .price(full.getPrice())
-                .build();
     }
 
 }

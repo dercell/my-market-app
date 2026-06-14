@@ -26,10 +26,10 @@ public class AccountService {
                 .map(ChargeBalanceRequest::getTotalSum)
                 .filter(chargeSum -> chargeSum >= 0)
                 .switchIfEmpty(Mono.error(new InvalidSumValueException("Некорректно указанная сумма")))
-                .filter(chargeSum -> chargeSum <= CURRENT_BALANCE.getSum())
+                .filter(chargeSum -> chargeSum <= CURRENT_BALANCE.getBalance())
                 .switchIfEmpty(Mono.error(new NotEnoughMoneyException("Недостаточно денег на счете")))
                 .flatMap(chargeSum -> {
-                    CURRENT_BALANCE.setSum(CURRENT_BALANCE.getSum() - chargeSum);
+                    CURRENT_BALANCE.setBalance(CURRENT_BALANCE.getBalance() - chargeSum);
                     return Mono.empty();
                 });
     }
