@@ -1,0 +1,109 @@
+openapi: 3.0.4
+
+info:
+  title: API Сервиса оплаты заказа
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8090/
+    description: Основной сервер для работы с API оплаты заказа
+
+paths:
+  /balance:
+    get:
+      operationId: getBalance
+      summary: Получение текущего баланса
+      responses:
+        '200':
+          description: Возвращает текущий баланс
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
+
+  /chargeBalance:
+    post:
+      operationId: chargeBalance
+      summary: Списание суммы заказа со счета
+      requestBody:
+        required: true
+        description: Сумма для списания
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                totalSum:
+                  type: integer
+                  format: int64
+                  example: 4000
+              required:
+                - totalSum
+      responses:
+        '200':
+          description: Успешное списание средств
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeStatus'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
+
+
+components:
+  schemas:
+    ChargeStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        isSuccess:
+          type: boolean
+      example:
+        status: Оплата прошла успешно
+        isSuccess: true
+      required:
+        - status
+        - isSuccess
+
+    Balance:
+      type: object
+      required:
+        - balance
+      properties:
+        balance:
+          type: integer
+          format: int64
+          example: 15000
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Сообщение об ошибке
+
+  responses:
+    InvalidRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Некорректный запрос
+
+    ServerError:
+      description: Ошибки сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Внутренняя ошибка
