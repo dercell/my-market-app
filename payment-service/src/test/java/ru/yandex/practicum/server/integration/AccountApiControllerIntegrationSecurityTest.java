@@ -1,55 +1,51 @@
-package ru.yandex.practicum.server.unit;
+package ru.yandex.practicum.server.integration;
 
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
-import ru.yandex.practicum.server.api.AccountApiController;
-import ru.yandex.practicum.server.config.SecurityConfig;
 import ru.yandex.practicum.server.domain.Balance;
 import ru.yandex.practicum.server.domain.ChargeBalanceRequest;
 import ru.yandex.practicum.server.domain.ChargeStatus;
 import ru.yandex.practicum.server.service.AccountService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-@Tag("unit")
+@Tag("integration")
 @Tag("controller")
-@WebFluxTest(AccountApiController.class)
-@Import(SecurityConfig.class)
-class AccountApiControllerTest {
+@AutoConfigureWebTestClient
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+class AccountApiControllerIntegrationSecurityTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
-    @MockitoBean
+    @Autowired
     private AccountService accountService;
+
+    @BeforeEach
+    void setUp() {
+        accountService.getCurrentBalance().setBalance(100000L);
+    }
 
     @Test
     @WithMockUser(authorities = {"SERVICE"})
     void getBalance() {
-
-        when(accountService.getCurrentBalance()).thenReturn(new Balance(10L));
-
         webTestClient.get().uri("/balance")
                 .exchange()
                 .expectStatus()
                 .isOk()
                 .expectBody(Balance.class)
-                .value(balance -> assertEquals(10L, balance.getBalance()));
+                .value(balance -> assertEquals(100000L, balance.getBalance()));
     }
 
     @Test
     void getBalanceUnauthorized() {
-        when(accountService.getCurrentBalance()).thenReturn(new Balance(10L));
-
         webTestClient.get().uri("/balance")
                 .exchange()
                 .expectStatus()
@@ -59,8 +55,6 @@ class AccountApiControllerTest {
     @Test
     @WithMockUser(authorities = {"OTHER_SERVICE"})
     void getBalanceForbidden() {
-        when(accountService.getCurrentBalance()).thenReturn(new Balance(10L));
-
         webTestClient.get().uri("/balance")
                 .exchange()
                 .expectStatus()
@@ -72,9 +66,6 @@ class AccountApiControllerTest {
     void chargeBalance() {
 
         ChargeBalanceRequest request = new ChargeBalanceRequest(10L);
-
-        when(accountService.chargeBalance(any(Mono.class)))
-                .thenReturn(Mono.empty());
 
         webTestClient.post().uri("/chargeBalance")
                 .bodyValue(request)
@@ -89,9 +80,6 @@ class AccountApiControllerTest {
     void chargeBalanceUnauthorized() {
 
         ChargeBalanceRequest request = new ChargeBalanceRequest(10L);
-
-        when(accountService.chargeBalance(any(Mono.class)))
-                .thenReturn(Mono.empty());
 
         webTestClient.post().uri("/chargeBalance")
                 .bodyValue(request)
@@ -113,5 +101,6 @@ class AccountApiControllerTest {
                 .isForbidden();
     }
 
-}
 
+
+}

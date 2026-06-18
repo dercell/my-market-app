@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import ru.yandex.practicum.server.domain.Balance;
 import ru.yandex.practicum.server.domain.ChargeBalanceRequest;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @Tag("controller")
 @AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@WithMockUser(authorities = {"SERVICE"})
 class AccountApiControllerIntegrationTest {
 
     @Autowired
@@ -36,8 +38,8 @@ class AccountApiControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"SERVICE"})
     void getBalance() {
-
         webTestClient.get().uri("/balance")
                 .exchange()
                 .expectStatus()
@@ -47,11 +49,13 @@ class AccountApiControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(authorities = {"SERVICE"})
     void chargeBalance() {
 
         ChargeBalanceRequest request = new ChargeBalanceRequest(50000L);
 
-        webTestClient.post().uri("/chargeBalance")
+        webTestClient.post()
+                .uri("/chargeBalance")
                 .bodyValue(request)
                 .exchange()
                 .expectStatus()
