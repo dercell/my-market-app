@@ -1,4 +1,6 @@
 spring:
+  webflux:
+    static-path-pattern: /images/**
   web:
     resources:
       static-locations:
@@ -22,8 +24,26 @@ spring:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:my_market_db}
     user: ${DB_USER:yp_user}
     password: ${DB_PASSWORD:yp_password}
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            authorization-uri: http://localhost:8080/realms/market-app/protocol/openid-connect/auth
+            token-uri: http://localhost:8080/realms/market-app/protocol/openid-connect/token
+            jwk-set-uri: http://localhost:8080/realms/market-app/protocol/openid-connect/certs
+        registration:
+          keycloak:
+            client-id: market-app
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:G8eG1ctvsrarlmgmmOtuaVlo85ey0T7k}
+            authorizationGrantType: authorization_code
+            redirect-uri: "http://localhost:8081/login/oauth2/code/keycloak"
+            scope: openid, profile, email
+
+
 server:
-  port: ${APP_PORT:8080}
+  port: ${APP_PORT:8081}
 logging:
   level:
     ru.yandex.practicum.my_market_app: debug
