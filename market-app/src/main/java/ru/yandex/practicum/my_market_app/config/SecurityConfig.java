@@ -11,6 +11,8 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 
 
+import java.net.URI;
+
 import static org.springframework.security.config.Customizer.withDefaults;
 
 
@@ -34,17 +36,20 @@ public class SecurityConfig {
                         .logoutSuccessHandler(logoutSuccessHandler())
                 )
                 .oauth2Login(withDefaults())
+                .oauth2Client(withDefaults())
+                .anonymous(anon -> anon.principal("Гость"))
                 .build();
 
     }
 
     @Bean
     public ServerLogoutSuccessHandler logoutSuccessHandler() {
-        var redirect = new OidcClientInitiatedServerLogoutSuccessHandler(clientRegistrationRepository);
+        var handler = new OidcClientInitiatedServerLogoutSuccessHandler(clientRegistrationRepository);
 
-        redirect.setPostLogoutRedirectUri("/items");
+        handler.setPostLogoutRedirectUri("{baseUrl}/items");
+        handler.setLogoutSuccessUrl(URI.create("/items"));
 
-        return redirect;
+        return handler;
     }
 
 }
