@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcCli
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import ru.yandex.practicum.my_market_app.util.security.UserSyncAuthenticationSuccessHandler;
 
 
 import java.net.URI;
@@ -23,6 +24,9 @@ public class SecurityConfig {
     @Autowired
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
 
+    @Autowired
+    private UserSyncAuthenticationSuccessHandler successHandler;
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity httpSecurity) {
 
@@ -35,7 +39,11 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutSuccessHandler(logoutSuccessHandler())
                 )
-                .oauth2Login(withDefaults())
+                .oauth2Login(login ->
+                        login.authenticationSuccessHandler(successHandler)
+
+                )
+                //.oauth2Login(withDefaults())
                 .oauth2Client(withDefaults())
                 .anonymous(anon -> anon.principal("Гость"))
                 .build();

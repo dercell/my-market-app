@@ -20,11 +20,14 @@ public class CartItem {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column
+    @Column("item_id")
     private Long itemId;
 
     @Column
     private Integer count;
+
+    @Column("user_id")
+    private Long userId;
 
     public void addOne() {
         this.count++;

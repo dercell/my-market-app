@@ -24,5 +24,6 @@
     <include file="018-drop-cart-item-id-unique.xml" relativeToChangelogFile="true"/>
     <include file="019-new-cart-item-id-unique.xml" relativeToChangelogFile="true"/>
     <include file="020-cart-items-fk.xml" relativeToChangelogFile="true"/>
+    <include file="021-users-login-unique.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
