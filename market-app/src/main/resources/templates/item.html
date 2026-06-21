@@ -51,7 +51,7 @@
 
                     </div>
                 </div>
-                <div class="d-flex ms-auto" sec:authorize="isAnonymous()">
+                <div class="d-flex ms-auto gap-3" sec:authorize="isAnonymous()">
                     <a href="/items" class="btn btn-secondary bi bi-arrow-left-square"> Главная</a>
                     <a class="btn btn-secondary bi bi-box-arrow-in-right" th:href="@{/oauth2/authorization/keycloak}">
                         Войти</a>

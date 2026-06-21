@@ -23,13 +23,17 @@ public class ItemService {
     private final ItemCacheService itemCacheService;
 
 
-    public Mono<ItemFullDto> getItem(Long id) {
+    public Mono<ItemFullDto> getItem(Long id, Long userId) {
         return itemCacheService.getCachedItem(id)
                 .switchIfEmpty(loadFromDatabaseAndCache(id))
-                .flatMap(itemInfoDto -> cartService.getCartItemByItemId(id)
-                        .map(CartItem::getCount)
-                        .defaultIfEmpty(0)
-                        .map(count -> new ItemFullDto(itemInfoDto, count)));
+                .flatMap(itemInfoDto -> Mono.just(userId)
+                        .filter(uid -> uid != -1L)
+                        .flatMap(uid -> cartService.getCartItemByItemIdAndUserId(id, uid)
+                                .map(CartItem::getCount)
+                                .defaultIfEmpty(0))
+                        .switchIfEmpty(Mono.just(0))
+                        .map(count -> new ItemFullDto(itemInfoDto, count))
+                );
     }
 
     private Mono<ItemInfoDto> loadFromDatabaseAndCache(Long id) {
@@ -59,11 +63,12 @@ public class ItemService {
                     PageDto paging = new PageDto(pageNumber, pageSize, hasPrevious, hasNext);
                     return itemDao.getItemIdsPage(search, pageNumber, pageSize, sort)
                             .collectList()
-                            .flatMap(idList ->
-                                    cartService.getCartItemsByIdList(idList, userId).collectList()
-                                            .flatMap(cartItemsList -> itemCacheService
-                                                    .collectAllItems(idList, cartItemsList)
-                                            )
+                            .flatMap(idList -> Mono.just(userId).filter(uid -> uid != -1L)
+                                    .flatMap(uid -> cartService.getCartItemsByIdList(idList, uid).collectList())
+                                    .flatMap(cartItemsList -> itemCacheService
+                                            .collectAllItems(idList, cartItemsList)
+                                    ).switchIfEmpty(itemCacheService
+                                            .collectAllItems(idList, List.of()))
                             )
                             .map(allItems -> new ItemPageDto(cutItems(allItems),
                                     search, sort, paging));

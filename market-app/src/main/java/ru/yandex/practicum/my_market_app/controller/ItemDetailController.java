@@ -23,9 +23,14 @@ public class ItemDetailController {
     private final ItemService itemService;
 
     @GetMapping()
-    public Mono<Rendering> getItem(@PathVariable("id") Long itemId) {
+    public Mono<Rendering> getItem(
+            @AuthenticationPrincipal CustomOidcUser authUser,
+            @PathVariable("id") Long itemId
+    ) {
         return Mono.just(Rendering.view("item")
-                .modelAttribute("item", itemService.getItem(itemId))
+                .modelAttribute("item",
+                        Mono.just(OidcUserHelper.extractUserIdFromOidcUser(authUser))
+                                .flatMap(userId -> itemService.getItem(itemId, userId)))
                 .build());
     }
 
@@ -35,8 +40,9 @@ public class ItemDetailController {
             @ModelAttribute @ItemFormValid ItemForm form
     ) {
         log.info("Current user {}", authUser.getDbUser());
-        return itemService.changeItemAmount(form.getId(), form.getAction(), OidcUserHelper.extractUserIdFromOidcUser(authUser))
-                .then(itemService.getItem(form.getId()))
+        return Mono.just(OidcUserHelper.extractUserIdFromOidcUser(authUser))
+                .map(userId -> itemService.changeItemAmount(form.getId(), form.getAction(), userId)
+                        .then(itemService.getItem(form.getId(), userId)))
                 .map(itemDto -> Rendering
                         .view("item")
                         .modelAttribute("item", itemDto)

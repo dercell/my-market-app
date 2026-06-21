@@ -51,15 +51,15 @@ public class CartService {
         return cartRepository.findAllByItemIdInAndUserId(itemIdList, userId);
     }
 
-    public Mono<CartItem> getCartItemByItemId(Long itemId) {
-        return cartRepository.getCartItemByItemId(itemId);
+    public Mono<CartItem> getCartItemByItemIdAndUserId(Long itemId, Long userId) {
+        return cartRepository.getCartItemByItemIdAndUserId(itemId, userId);
     }
 
     @Transactional
     public Mono<CartPageDto> changeItemAmount(Long itemId, String action, Long userId) {
         Mono<Void> changeAmountMono;
 
-        Mono<CartItem> cartItemMono = cartRepository.getCartItemByItemId(itemId);
+        Mono<CartItem> cartItemMono = cartRepository.getCartItemByItemIdAndUserId(itemId, userId);
         log.info("itemId: {}, action: {}", itemId, action);
         if ("PLUS".equalsIgnoreCase(action)) {
             changeAmountMono = cartItemMono
