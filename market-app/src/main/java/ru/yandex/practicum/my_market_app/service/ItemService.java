@@ -40,15 +40,15 @@ public class ItemService {
                         .thenReturn(itemInfoDto));
     }
 
-    public Mono<Void> changeItemAmount(Long itemId, String action) {
-        return cartService.changeItemAmount(itemId, action).then();
+    public Mono<Void> changeItemAmount(Long itemId, String action, Long userId) {
+        return cartService.changeItemAmount(itemId, action, userId).then();
     }
 
     public Mono<Long> createItem(ItemFullDto itemFullDto) {
         return itemDao.createItem(itemFullDto);
     }
 
-    public Mono<ItemPageDto> getItemsPage(String search, int pageNumber, int pageSize, String sort) {
+    public Mono<ItemPageDto> getItemsPage(Long userId, String search, int pageNumber, int pageSize, String sort) {
         log.info("search: {}, pageNumber: {}, pageSize: {}, sort: {}", search, pageNumber, pageSize, sort);
 
         return itemDao.getTotalRows(search)
@@ -60,7 +60,7 @@ public class ItemService {
                     return itemDao.getItemIdsPage(search, pageNumber, pageSize, sort)
                             .collectList()
                             .flatMap(idList ->
-                                    cartService.getCartItemsByIdList(idList).collectList()
+                                    cartService.getCartItemsByIdList(idList, userId).collectList()
                                             .flatMap(cartItemsList -> itemCacheService
                                                     .collectAllItems(idList, cartItemsList)
                                             )

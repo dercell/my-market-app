@@ -13,5 +13,6 @@ public interface CartRepository extends ReactiveCrudRepository<CartItem, Long> {
     
     Mono<CartItem> getCartItemByItemId(Long itemId);
     Flux<CartItem> findAllByItemIdIn(Collection<Long> itemIds);
-
+    Flux<CartItem> findAllByItemIdInAndUserId(Collection<Long> itemIds, Long userId);
+    Flux<CartItem> findAllByUserId(Long userId);
 }

@@ -22,9 +22,9 @@ public class CartService {
     private final PaymentService paymentService;
     private final ItemCacheService itemCacheService;
 
-    public Mono<CartPageDto> getCart() {
+    public Mono<CartPageDto> getCart(Long userId) {
 
-        return getCartItems()
+        return getCartItems(userId)
                 .flatMap(itemDtoList -> {
 
                     long totalSum = itemDtoList.stream()
@@ -35,8 +35,8 @@ public class CartService {
                 });
     }
 
-    public Mono<List<ItemFullDto>> getCartItems() {
-        return cartRepository.findAll()
+    public Mono<List<ItemFullDto>> getCartItems(Long userId) {
+        return cartRepository.findAllByUserId(userId)
                 .collectList()
                 .flatMap(cartItems -> {
                     if (cartItems.isEmpty()) {
@@ -47,8 +47,8 @@ public class CartService {
                 });
     }
 
-    public Flux<CartItem> getCartItemsByIdList(List<Long> itemIdList) {
-        return cartRepository.findAllByItemIdIn(itemIdList);
+    public Flux<CartItem> getCartItemsByIdList(List<Long> itemIdList, Long userId) {
+        return cartRepository.findAllByItemIdInAndUserId(itemIdList, userId);
     }
 
     public Mono<CartItem> getCartItemByItemId(Long itemId) {
@@ -56,7 +56,7 @@ public class CartService {
     }
 
     @Transactional
-    public Mono<CartPageDto> changeItemAmount(Long itemId, String action) {
+    public Mono<CartPageDto> changeItemAmount(Long itemId, String action, Long userId) {
         Mono<Void> changeAmountMono;
 
         Mono<CartItem> cartItemMono = cartRepository.getCartItemByItemId(itemId);
@@ -70,7 +70,7 @@ public class CartService {
                     })
                     .switchIfEmpty(Mono.defer(() -> {
                         log.info("empty");
-                        return cartRepository.save(CartItem.builder().itemId(itemId).count(1).build());
+                        return cartRepository.save(CartItem.builder().itemId(itemId).count(1).userId(userId).build());
                     }))
                     .then();
         } else {
@@ -86,7 +86,7 @@ public class CartService {
                     .switchIfEmpty(Mono.empty());
         }
 
-        return changeAmountMono.then(this.getCart());
+        return changeAmountMono.then(this.getCart(userId));
 
     }
 

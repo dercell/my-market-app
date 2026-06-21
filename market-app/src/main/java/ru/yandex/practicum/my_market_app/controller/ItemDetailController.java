@@ -1,14 +1,20 @@
 package ru.yandex.practicum.my_market_app.controller;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
 import ru.yandex.practicum.my_market_app.model.dto.ItemForm;
+import ru.yandex.practicum.my_market_app.model.entity.CustomOidcUser;
+import ru.yandex.practicum.my_market_app.model.entity.User;
 import ru.yandex.practicum.my_market_app.service.ItemService;
+import ru.yandex.practicum.my_market_app.util.security.OidcUserHelper;
 import ru.yandex.practicum.my_market_app.util.validation.itemform.ItemFormValid;
 
+@Slf4j
 @Controller
 @AllArgsConstructor
 @RequestMapping("/items/{id}")
@@ -25,10 +31,11 @@ public class ItemDetailController {
 
     @PostMapping
     public Mono<Rendering> changeItemAmount(
+            @AuthenticationPrincipal CustomOidcUser authUser,
             @ModelAttribute @ItemFormValid ItemForm form
     ) {
-
-        return itemService.changeItemAmount(form.getId(), form.getAction())
+        log.info("Current user {}", authUser.getDbUser());
+        return itemService.changeItemAmount(form.getId(), form.getAction(), OidcUserHelper.extractUserIdFromOidcUser(authUser))
                 .then(itemService.getItem(form.getId()))
                 .map(itemDto -> Rendering
                         .view("item")

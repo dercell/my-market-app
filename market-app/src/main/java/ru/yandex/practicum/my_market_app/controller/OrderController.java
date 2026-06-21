@@ -1,11 +1,15 @@
 package ru.yandex.practicum.my_market_app.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.model.entity.CustomOidcUser;
+import ru.yandex.practicum.my_market_app.model.entity.User;
 import ru.yandex.practicum.my_market_app.service.OrderService;
+import ru.yandex.practicum.my_market_app.util.security.OidcUserHelper;
 
 
 @Controller
@@ -16,8 +20,10 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public Mono<Rendering> getOrders() {
-        return orderService.getOrders()
+    public Mono<Rendering> getOrders(
+            @AuthenticationPrincipal CustomOidcUser authUser
+    ) {
+        return orderService.getOrders(OidcUserHelper.extractUserIdFromOidcUser(authUser))
                 .collectList()
                 .map(orderList ->
                         Rendering.view("orders")
@@ -30,7 +36,6 @@ public class OrderController {
             @PathVariable("id") Long orderId,
             @RequestParam(name = "newOrder", required = false, defaultValue = "false") boolean isNewOrder
     ) {
-
         return Mono.just(Rendering
                 .view("order")
                 .modelAttribute("order", orderService.getOrderDetail(orderId))
