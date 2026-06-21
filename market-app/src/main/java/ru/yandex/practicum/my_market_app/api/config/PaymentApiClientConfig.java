@@ -53,10 +53,10 @@ public class PaymentApiClientConfig {
 
 
     @Bean
-    public WebClient getWebClient(ReactiveOAuth2AuthorizedClientManager clientManager) {
+    public WebClient getWebClient(ReactiveOAuth2AuthorizedClientManager auth2AuthorizedClientManager) {
 
-        var oauth2Client = new ServerOAuth2AuthorizedClientExchangeFilterFunction(clientManager);
-        oauth2Client.setDefaultClientRegistrationId("keycloak");
+        var oauth2Client = new ServerOAuth2AuthorizedClientExchangeFilterFunction(auth2AuthorizedClientManager);
+        oauth2Client.setDefaultClientRegistrationId("b2b");
 
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3_000)
