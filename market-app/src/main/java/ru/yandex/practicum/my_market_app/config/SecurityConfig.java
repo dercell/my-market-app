@@ -28,13 +28,8 @@ public class SecurityConfig {
     @Autowired
     private UserSyncAuthenticationSuccessHandler successHandler;
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity httpSecurity) {
-
-        return httpSecurity
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
-                )
+    public void configureCommon(ServerHttpSecurity httpSecurity) {
+        httpSecurity
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/", "/items/**", "/images/*").permitAll()
                         .anyExchange().authenticated()
@@ -47,7 +42,18 @@ public class SecurityConfig {
 
                 )
                 .oauth2Client(withDefaults())
-                .anonymous(anon -> anon.principal("Гость"))
+                .anonymous(anon -> anon.principal("Гость"));
+    }
+
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity httpSecurity) {
+
+        configureCommon(httpSecurity);
+
+        return httpSecurity
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+                )
                 .build();
 
     }

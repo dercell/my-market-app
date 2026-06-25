@@ -47,9 +47,9 @@ class CartServiceTest {
 
     @Test
     void getCartItemByItemId() {
-        CartItem expectedItem = new CartItem(1L, 1L, 2);
-        when(cartRepository.getCartItemByItemId(1L)).thenReturn(Mono.just(expectedItem));
-        CartItem result = cartService.getCartItemByItemId(1L).block();
+        CartItem expectedItem = new CartItem(1L, 1L, 2, 1L);
+        when(cartRepository.getCartItemByItemIdAndUserId(1L, 1L)).thenReturn(Mono.just(expectedItem));
+        CartItem result = cartService.getCartItemByItemIdAndUserId(1L, 1L).block();
 
         assertEquals(expectedItem.getItemId(), result.getItemId());
         assertEquals(expectedItem.getCount(), result.getCount());
@@ -58,9 +58,9 @@ class CartServiceTest {
     @Test
     void getCartItemsByIdList() {
         List<Long> itemIds = List.of(1L, 2L);
-        when(cartRepository.findAllByItemIdIn(itemIds)).thenReturn(Flux.fromIterable(prepareCartItems()));
+        when(cartRepository.findAllByItemIdInAndUserId(itemIds, 1L)).thenReturn(Flux.fromIterable(prepareCartItems()));
 
-        List<CartItem> result = cartService.getCartItemsByIdList(itemIds).collectList().block();
+        List<CartItem> result = cartService.getCartItemsByIdList(itemIds, 1L).collectList().block();
 
         assertEquals(prepareCartItems().size(), result.size());
     }
@@ -80,12 +80,12 @@ class CartServiceTest {
             items = getItemFullDtos();
             itemIds = cartItems.stream().map(CartItem::getItemId).toList();
         }
-        when(cartRepository.findAll()).thenReturn(Flux.fromIterable(cartItems));
+        when(cartRepository.findAllByUserId(1L)).thenReturn(Flux.fromIterable(cartItems));
         if (!isEmptyCart) {
             when(itemCacheService.collectAllItems(itemIds, cartItems)).thenReturn(Mono.just(items));
         }
 
-        List<ItemFullDto> resultItems = cartService.getCartItems().block();
+        List<ItemFullDto> resultItems = cartService.getCartItems(1L).block();
 
         assertEquals(cartItems.size(), resultItems.size());
 
@@ -95,13 +95,13 @@ class CartServiceTest {
     @ParameterizedTest
     @MethodSource("carts")
     void getCart(List<CartItem> cart, List<ItemFullDto> fullDtoList, Integer cartSize, long totalSum) {
-        when(cartRepository.findAll()).thenReturn(Flux.fromIterable(cart));
+        when(cartRepository.findAllByUserId(1L)).thenReturn(Flux.fromIterable(cart));
         if (!cart.isEmpty()) {
             when(itemCacheService.collectAllItems(List.of(1L, 2L), cart)).thenReturn(Mono.just(fullDtoList));
         }
         when(paymentService.checkBalance(totalSum)).thenReturn(Mono.just(getGoodPA()));
 
-        CartPageDto cartPageDto = cartService.getCart().block();
+        CartPageDto cartPageDto = cartService.getCart(1L).block();
 
         assertEquals(cartSize, cartPageDto.itemsList().size());
         assertEquals(totalSum, cartPageDto.totalSum());
@@ -152,12 +152,12 @@ class CartServiceTest {
         }
         Mono<CartItem> cartItemMono = changingItem == null ? Mono.empty() : Mono.just(changingItem);
 
-        when(cartRepository.getCartItemByItemId(1L)).thenReturn(cartItemMono);
-        when(cartRepository.findAll()).thenReturn(Flux.fromIterable(cart));
+        when(cartRepository.getCartItemByItemIdAndUserId(1L, 1L)).thenReturn(cartItemMono);
+        when(cartRepository.findAllByUserId(1L)).thenReturn(Flux.fromIterable(cart));
         when(paymentService.checkBalance(anyLong())).thenReturn(Mono.just(getGoodPA()));
 
 
-        cartService.changeItemAmount(1L, action).block();
+        cartService.changeItemAmount(1L, action, 1L).block();
 
         verify(cartRepository, times(saveCallCnt)).save(any(CartItem.class));
         verify(cartRepository, times(deleteCallCnt)).delete(any(CartItem.class));
@@ -197,8 +197,8 @@ class CartServiceTest {
 
     private static List<CartItem> prepareCartItems() {
         return List.of(
-                new CartItem(1L, 1L, 2),
-                new CartItem(2L, 2L, 1)
+                new CartItem(1L, 1L, 2, 1L),
+                new CartItem(2L, 2L, 1, 1L)
         );
     }
 

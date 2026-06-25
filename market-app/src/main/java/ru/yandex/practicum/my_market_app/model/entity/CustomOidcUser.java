@@ -3,7 +3,7 @@ package ru.yandex.practicum.my_market_app.model.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
+import lombok.ToString;import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -13,6 +13,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 public class CustomOidcUser implements OidcUser {
 

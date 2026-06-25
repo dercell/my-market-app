@@ -2,11 +2,15 @@ version: '3.8'
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
-    command: start-dev
     environment:
       # Для входа в UI будут использоваться эти параметры
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
     ports:
       # В нашем случае Keycloak будет запущен на локальном порту 8080
       - "8080:8080"

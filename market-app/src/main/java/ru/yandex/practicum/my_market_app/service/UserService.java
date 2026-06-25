@@ -16,11 +16,6 @@ public class UserService {
 
     private UserRepository userRepository;
 
-
-    public Mono<User> findUserByLogin(String login) {
-        return null;
-    }
-
     public Mono<CustomOidcUser> syncUserInAuth(OidcUser user) {
         return userRepository.getUsersByLogin(user.getName())
                 .switchIfEmpty(Mono.just(User.builder()

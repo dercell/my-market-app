@@ -3,7 +3,7 @@ package ru.yandex.practicum.my_market_app.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
@@ -14,7 +14,7 @@ import ru.yandex.practicum.my_market_app.service.OrderService;
 import ru.yandex.practicum.my_market_app.util.security.OidcUserHelper;
 import ru.yandex.practicum.my_market_app.util.validation.itemform.ItemFormValid;
 
-import java.text.MessageFormat;
+import java.security.Principal;import java.text.MessageFormat;
 
 @Slf4j
 @Controller
@@ -29,6 +29,7 @@ public class CartController {
     @GetMapping("/cart/items")
     public Mono<Rendering> getCartItems(@AuthenticationPrincipal CustomOidcUser authUser) {
         return cartService.getCart(OidcUserHelper.extractUserIdFromOidcUser(authUser))
+                .doOnNext(el -> log.info("USER {}", authUser))
                 .map(cartPageDto -> Rendering.view("cart")
                         .modelAttribute("items", cartPageDto.itemsList())
                         .modelAttribute("total", cartPageDto.totalSum())

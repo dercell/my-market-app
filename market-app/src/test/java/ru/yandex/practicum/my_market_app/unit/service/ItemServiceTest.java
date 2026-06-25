@@ -45,15 +45,16 @@ class ItemServiceTest {
     void getItemsPage() {
 
         List<ItemFullDto> cartPageDto = List.of(new ItemFullDto(1L, "item1", "", "", 1L, 3));
-        CartItem ca = new CartItem(1L, 1L, 0);
+        CartItem ca = new CartItem(1L, 1L, 0, 1L);
         when(itemDao.getTotalRows(anyString())).thenReturn(Mono.just(1L));
         when(itemDao.getItemIdsPage(anyString(), anyInt(), anyInt(), anyString()))
                 .thenReturn(Flux.just(1L));
-        when(cartService.getCartItemsByIdList(List.of(1L))).thenReturn(Flux.just(ca));
+        when(cartService.getCartItemsByIdList(List.of(1L), 1L)).thenReturn(Flux.just(ca));
 
         when(itemCacheService.collectAllItems(List.of(1L), List.of(ca))).thenReturn(Mono.just(cartPageDto));
+        when(itemCacheService.collectAllItems(List.of(1L), List.of())).thenReturn(Mono.just(List.of()));
 
-        ItemPageDto itemPageDto = itemService.getItemsPage("", 0, 5, "NO").block();
+        ItemPageDto itemPageDto = itemService.getItemsPage(1L, "", 0, 5, "NO").block();
 
         assertEquals(1, itemPageDto.items().stream().mapToLong(List::size).sum());
         assertEquals(0, itemPageDto.paging().pageNumber());
@@ -67,8 +68,8 @@ class ItemServiceTest {
     void getItemFromDb(boolean isCached) {
         ItemFullDto expected = new ItemFullDto(1L, "item1", "", "", 1L, 3);
         ItemInfoDto itemInfoDto = new ItemInfoDto(1L, "item1", "", "", 1L);
-        CartItem ca = new CartItem(1L, 1L, 3);
-        Mono<ItemInfoDto> cachedItemsMono = null;
+        CartItem ca = new CartItem(1L, 1L, 3, 1L);
+        Mono<ItemInfoDto> cachedItemsMono;
         if (isCached) {
             cachedItemsMono = Mono.just(itemInfoDto);
         } else {
@@ -78,10 +79,10 @@ class ItemServiceTest {
 
         when(itemCacheService.getCachedItem(1L)).thenReturn(cachedItemsMono);
 
-        when(cartService.getCartItemByItemId(1L)).thenReturn(Mono.just(ca));
+        when(cartService.getCartItemByItemIdAndUserId(1L, 1L)).thenReturn(Mono.just(ca));
         when(itemDao.getItem(1L)).thenReturn(Mono.just(itemInfoDto));
 
-        ItemFullDto itemFullDto = itemService.getItem(1L).block();
+        ItemFullDto itemFullDto = itemService.getItem(1L, 1L).block();
 
         assertEquals(expected.getTitle(), itemFullDto.getTitle());
         assertEquals(expected.getCount(), itemFullDto.getCount());
@@ -90,11 +91,11 @@ class ItemServiceTest {
 
     @Test
     void changeAmount() {
-        when(cartService.changeItemAmount(1L, "PLUS")).thenReturn(Mono.empty());
+        when(cartService.changeItemAmount(1L, "PLUS", 1L)).thenReturn(Mono.empty());
 
-        itemService.changeItemAmount(1L, "PLUS").block();
+        itemService.changeItemAmount(1L, "PLUS", 1L).block();
 
-        verify(cartService).changeItemAmount(1L, "PLUS");
+        verify(cartService).changeItemAmount(1L, "PLUS", 1L);
     }
 
 }

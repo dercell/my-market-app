@@ -17,6 +17,8 @@ import ru.yandex.practicum.my_market_app.util.validation.itemform.ItemFormValid;
 
 import java.text.MessageFormat;
 
+import static ru.yandex.practicum.my_market_app.util.security.OidcUserHelper.extractUserIdFromOidcUser;
+
 @Slf4j
 @Controller
 @AllArgsConstructor

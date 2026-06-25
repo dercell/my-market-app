@@ -5,15 +5,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.config.TestSecurityUnitConfig;
 import ru.yandex.practicum.my_market_app.controller.ItemController;
 import ru.yandex.practicum.my_market_app.model.dto.detail.ItemFullDto;
 import ru.yandex.practicum.my_market_app.model.dto.page.ItemPageDto;
 import ru.yandex.practicum.my_market_app.model.dto.PageDto;
 import ru.yandex.practicum.my_market_app.service.ItemService;
+import ru.yandex.practicum.my_market_app.util.WithCustomOidcUser;
 
 import java.util.List;
 
@@ -25,6 +29,8 @@ import static org.mockito.Mockito.when;
 @Tag("controller")
 @Tag("unit")
 @WebFluxTest(ItemController.class)
+@Import(TestSecurityUnitConfig.class)
+@WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
 class ItemControllerTest {
 
     @Autowired
@@ -35,6 +41,9 @@ class ItemControllerTest {
 
     @MockitoBean
     private CacheManager cacheManager;
+
+    @MockitoBean
+    private ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     @Test
     void getItemPage() {
@@ -47,7 +56,7 @@ class ItemControllerTest {
                 new PageDto(0, 5, false, false)
         );
 
-        when(itemService.getItemsPage("", 0, 5, "NO"))
+        when(itemService.getItemsPage(1L, "", 0, 5, "NO"))
                 .thenReturn(Mono.just(itemPageDto));
 
         webTestClient.get().uri("/items")
@@ -65,7 +74,7 @@ class ItemControllerTest {
     @Test
     void changeItemAmount() {
 
-        when(itemService.changeItemAmount(anyLong(), anyString())).thenReturn(Mono.empty());
+        when(itemService.changeItemAmount(anyLong(), anyString(), anyLong())).thenReturn(Mono.empty());
 
         webTestClient.post().uri(uriBuilder -> uriBuilder.path("/items")
                         .queryParam("id", "1")

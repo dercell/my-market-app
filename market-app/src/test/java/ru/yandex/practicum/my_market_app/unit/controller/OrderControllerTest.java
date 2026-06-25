@@ -5,15 +5,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.yandex.practicum.my_market_app.config.TestSecurityUnitConfig;
 import ru.yandex.practicum.my_market_app.controller.OrderController;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderDetailDto;
 import ru.yandex.practicum.my_market_app.model.dto.detail.OrderItemDto;
 import ru.yandex.practicum.my_market_app.service.OrderService;
+import ru.yandex.practicum.my_market_app.util.WithCustomOidcUser;
 
 import java.util.List;
 
@@ -23,6 +27,8 @@ import static org.mockito.Mockito.when;
 @Tag("controller")
 @Tag("unit")
 @WebFluxTest(OrderController.class)
+@Import(TestSecurityUnitConfig.class)
+@WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
 class OrderControllerTest {
 
     @Autowired
@@ -33,6 +39,9 @@ class OrderControllerTest {
 
     @MockitoBean
     private CacheManager cacheManager;
+
+    @MockitoBean
+    private ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     @Test
     void getOrders() {
@@ -46,7 +55,7 @@ class OrderControllerTest {
                 )
         ));
 
-        when(orderService.getOrders()).thenReturn(orderPageDtoList);
+        when(orderService.getOrders(1L)).thenReturn(orderPageDtoList);
 
         webTestClient.get().uri("/orders")
                 .exchange()

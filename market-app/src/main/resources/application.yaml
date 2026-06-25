@@ -31,7 +31,7 @@ spring:
         provider:
           keycloak:
             user-name-attribute: preferred_username
-            issuer-uri: http://localhost:8080/realms/market-app
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/market-app}
         registration:
           b2b:
             client-id: market-app
