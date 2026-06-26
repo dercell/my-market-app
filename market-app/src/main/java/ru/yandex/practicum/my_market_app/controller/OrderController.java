@@ -34,11 +34,12 @@ public class OrderController {
     @GetMapping("/{id}")
     public Mono<Rendering> getOrderDetail(
             @PathVariable("id") Long orderId,
-            @RequestParam(name = "newOrder", required = false, defaultValue = "false") boolean isNewOrder
+            @RequestParam(name = "newOrder", required = false, defaultValue = "false") boolean isNewOrder,
+            @AuthenticationPrincipal CustomOidcUser authUser
     ) {
         return Mono.just(Rendering
                 .view("order")
-                .modelAttribute("order", orderService.getOrderDetail(orderId))
+                .modelAttribute("order", orderService.getOrderDetail(orderId, OidcUserHelper.extractUserIdFromOidcUser(authUser)))
                 .modelAttribute("newOrder", isNewOrder)
                 .build()
         );
