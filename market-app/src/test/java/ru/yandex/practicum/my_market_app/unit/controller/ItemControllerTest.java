@@ -21,6 +21,7 @@ import ru.yandex.practicum.my_market_app.util.WithCustomOidcUser;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,7 +31,6 @@ import static org.mockito.Mockito.when;
 @Tag("unit")
 @WebFluxTest(ItemController.class)
 @Import(TestSecurityUnitConfig.class)
-@WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
 class ItemControllerTest {
 
     @Autowired
@@ -46,6 +46,7 @@ class ItemControllerTest {
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void getItemPage() {
 
         ItemPageDto itemPageDto = new ItemPageDto(
@@ -72,6 +73,34 @@ class ItemControllerTest {
     }
 
     @Test
+    void getItemPageAnon() {
+
+        ItemPageDto itemPageDto = new ItemPageDto(
+                List.of(List.of(new ItemFullDto(1L, "item1", "", "", 10, 0),
+                        new ItemFullDto(2L, "item2", "", "", 3, 0))),
+                "",
+                "NO",
+                new PageDto(0, 5, false, false)
+        );
+
+        when(itemService.getItemsPage(-1L, "", 0, 5, "NO"))
+                .thenReturn(Mono.just(itemPageDto));
+
+        webTestClient.get().uri("/items")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+                .expectBody(String.class)
+                .value(html -> {
+                    assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
+                    assertTrue(html.contains("<h5 class=\"card-title\">item2</h5>"));
+                    assertFalse(html.contains("<button type=\"submit\" class=\"btn btn-outline-secondary\" name=\"action\" value=\"MINUS\">-\n" +
+                            "                                </button>"));
+                });
+    }
+
+    @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void changeItemAmount() {
 
         when(itemService.changeItemAmount(anyLong(), anyString(), anyLong())).thenReturn(Mono.empty());
@@ -86,6 +115,21 @@ class ItemControllerTest {
                 )
                 .exchange()
                 .expectStatus().is3xxRedirection();
+    }
+
+    @Test
+    void changeItemAmountAnon() {
+
+        webTestClient.post().uri(uriBuilder -> uriBuilder.path("/items")
+                        .queryParam("id", "1")
+                        .queryParam("search", "")
+                        .queryParam("pageNumber", "0")
+                        .queryParam("pageSize", "5")
+                        .queryParam("sort", "NO")
+                        .queryParam("action", "PLUS").build()
+                )
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 }

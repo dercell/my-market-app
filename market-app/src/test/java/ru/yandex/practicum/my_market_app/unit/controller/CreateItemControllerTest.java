@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 @Tag("unit")
 @WebFluxTest(CreateItemController.class)
 @Import(TestSecurityUnitConfig.class)
-@WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
 class CreateItemControllerTest {
 
     @Autowired
@@ -48,6 +47,7 @@ class CreateItemControllerTest {
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void getCreateItemForm() {
 
         webTestClient.get().uri("/items/create")
@@ -62,6 +62,16 @@ class CreateItemControllerTest {
     }
 
     @Test
+    void getCreateItemFormUnauthorized() {
+
+        webTestClient.get().uri("/items/create")
+                .exchange()
+                .expectStatus().isUnauthorized();
+
+    }
+
+    @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void createItem(){
 
         String filename = "image.jpg";
@@ -89,6 +99,35 @@ class CreateItemControllerTest {
                 .expectStatus().is3xxRedirection()
                 .expectHeader()
                 .value("Location", matcher -> matcher.equals("/items/1"));
+
+    }
+
+    @Test
+    void createItemUnauthorized(){
+
+        String filename = "image.jpg";
+        Long createdId = 1L;
+
+        when(imageService.uploadImage(any(Mono.class))).thenReturn(Mono.just(filename));
+        when(itemService.createItem(any(ItemFullDto.class))).thenReturn(Mono.just(createdId));
+
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("image", "test-content".getBytes())
+                .filename("test-image.jpg")
+                .contentType(MediaType.IMAGE_JPEG);
+
+        builder.part("title", "Test Item");
+        builder.part("description", "Test Description");
+        builder.part("price", "100");
+        builder.part("count", "5");
+
+
+        webTestClient.post()
+                .uri("/items/create")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .exchange()
+                .expectStatus().isUnauthorized();
 
     }
 

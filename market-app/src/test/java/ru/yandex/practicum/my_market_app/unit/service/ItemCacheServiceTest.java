@@ -51,7 +51,7 @@ class ItemCacheServiceTest {
         ItemInfoDto item1 = ItemInfoDto.builder().id(1L).build();
         ItemInfoDto item2 = ItemInfoDto.builder().id(2L).build();
 
-        List<ItemInfoDto> redisValues = List.of(item1, item2, null);
+        List<ItemInfoDto> redisValues = Arrays.asList(item1, item2, null);
 
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.multiGet(expectedKeys)).thenReturn(Mono.just(redisValues));

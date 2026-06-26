@@ -29,8 +29,8 @@ public class OrderService {
     private final PaymentService paymentService;
     private final CartService cartService;
 
-    public Mono<OrderDetailDto> getOrderDetail(Long id) {
-        Mono<Order> orderMono = orderRepository.findById(id);
+    public Mono<OrderDetailDto> getOrderDetail(Long id, Long userId) {
+        Mono<Order> orderMono = orderRepository.findOrderByIdAndUserId(id, userId);
         Mono<List<OrderItemDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
 
         return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(

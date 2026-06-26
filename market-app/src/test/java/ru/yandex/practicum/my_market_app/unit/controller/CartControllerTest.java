@@ -35,7 +35,6 @@ import static org.mockito.Mockito.when;
 @WebFluxTest(CartController.class)
 @EnableCaching
 @Import(TestSecurityUnitConfig.class)
-@WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
 class CartControllerTest {
 
     @Autowired
@@ -68,6 +67,7 @@ class CartControllerTest {
     }
 
     @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void getCartItems() {
 
         when(cartService.getCart(1L)).thenReturn(Mono.just(cart));
@@ -85,6 +85,15 @@ class CartControllerTest {
     }
 
     @Test
+    void getCartItemsUnauthorized() {
+        webTestClient
+                .get().uri("/cart/items")
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void changeItemAmount() {
 
         when(cartService.changeItemAmount(2L, "PLUS", 1L)).thenReturn(Mono.just(cart));
@@ -103,8 +112,18 @@ class CartControllerTest {
     }
 
     @Test
-    void buy() {
+    void changeItemAmountUnauthorized() {
+        webTestClient.post().uri(uriBuilder -> uriBuilder.path("/cart/items")
+                        .queryParam("id", "2")
+                        .queryParam("action", "PLUS").build())
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
 
+
+    @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
+    void buy() {
         when(orderService.buy(1L)).thenReturn(Mono.just(3L));
 
         webTestClient.post().uri("/buy")
@@ -113,6 +132,15 @@ class CartControllerTest {
     }
 
     @Test
+    void buyUnauthorized() {
+
+        webTestClient.post().uri("/buy")
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void buyError() {
 
         when(orderService.buy(1L)).thenThrow(new RuntimeException("Save error!"));

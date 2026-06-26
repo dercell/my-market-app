@@ -65,7 +65,7 @@ class OrderServiceIntegrationTest {
     @Test
     void getOrderDetail() {
 
-        OrderDetailDto orderDetailDto = orderService.getOrderDetail(2L).block();
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(2L, 1L).block();
 
         assertEquals(2, orderDetailDto.items().size());
         assertEquals(15000L, orderDetailDto.totalSum());
@@ -92,7 +92,7 @@ class OrderServiceIntegrationTest {
         StepVerifier.create(
                 orderService.buy(1L)
                         .contextWrite(context -> context.put(ServerWebExchange.class, exchange))
-                        .flatMap(newId -> orderService.getOrderDetail(newId))
+                        .flatMap(newId -> orderService.getOrderDetail(newId, 1L))
         ).assertNext(orderDetailDto -> {
             assertEquals(2, orderDetailDto.items().size());
             assertEquals(27000L, orderDetailDto.totalSum());

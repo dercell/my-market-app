@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 @Tag("unit")
 @WebFluxTest(ItemDetailController.class)
 @Import(TestSecurityUnitConfig.class)
-@WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
 class ItemDetailControllerTest {
 
     @Autowired
@@ -40,6 +39,7 @@ class ItemDetailControllerTest {
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void getItem() {
 
         ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 5L, 1);
@@ -59,6 +59,7 @@ class ItemDetailControllerTest {
     }
 
     @Test
+    @WithCustomOidcUser(username = "luke", userId = 1L, email = "lk@sw.com")
     void changeItemAmount() {
 
         ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 5L, 1);
@@ -78,6 +79,22 @@ class ItemDetailControllerTest {
                     assertTrue(html.contains("<h5 class=\"card-title\">item1</h5>"));
                     assertTrue(html.contains("<span>1</span>"));
                 });
+    }
+
+    @Test
+    void changeItemAmountUnauthorized() {
+
+        ItemFullDto itemFullDto = new ItemFullDto(1L, "item1", "", "", 5L, 1);
+
+        when(itemService.getItem(1L, 1L)).thenReturn(Mono.just(itemFullDto));
+        when(itemService.changeItemAmount(1L, "PLUS", 1L)).thenReturn(Mono.empty());
+
+        webTestClient.post().uri(uriBuilder -> uriBuilder
+                        .path("/items/" + 1)
+                        .queryParam("action", "PLUS")
+                        .build())
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 }

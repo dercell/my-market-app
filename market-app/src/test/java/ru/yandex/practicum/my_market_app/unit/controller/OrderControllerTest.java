@@ -77,7 +77,7 @@ class OrderControllerTest {
                         new OrderItemDto(2L, "item2", 3, 1)),
                 53L
         );
-        when(orderService.getOrderDetail(1L)).thenReturn(Mono.just(orderDetailDto));
+        when(orderService.getOrderDetail(1L, 1L)).thenReturn(Mono.just(orderDetailDto));
 
         webTestClient.get().uri(uriBuilder -> uriBuilder
                         .path("/orders/" + 1)

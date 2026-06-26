@@ -56,10 +56,10 @@ class OrderServiceTest {
 
         List<OrderItemDto> orderItemsList = List.of(orderItemDto);
 
-        when(orderRepository.findById(1L)).thenReturn(Mono.just(order));
+        when(orderRepository.findOrderByIdAndUserId(1L, 1L)).thenReturn(Mono.just(order));
         when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItemsList));
 
-        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L, 1L).block();
 
         assertEquals(order.getId(), orderDetailDto.id());
         assertEquals(order.getTotalSum(), orderDetailDto.totalSum());
