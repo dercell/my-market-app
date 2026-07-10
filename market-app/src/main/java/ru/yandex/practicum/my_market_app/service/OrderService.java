@@ -29,8 +29,8 @@ public class OrderService {
     private final PaymentService paymentService;
     private final CartService cartService;
 
-    public Mono<OrderDetailDto> getOrderDetail(Long id) {
-        Mono<Order> orderMono = orderRepository.findById(id);
+    public Mono<OrderDetailDto> getOrderDetail(Long id, Long userId) {
+        Mono<Order> orderMono = orderRepository.findOrderByIdAndUserId(id, userId);
         Mono<List<OrderItemDto>> orderItemsFlux = itemDao.getOrderItems(id).collectList();
 
         return Mono.zip(orderMono, orderItemsFlux).flatMap(tuple2 -> Mono.just(
@@ -38,8 +38,8 @@ public class OrderService {
         );
     }
 
-    public Flux<OrderDetailDto> getOrders() {
-        return orderRepository.findAll()
+    public Flux<OrderDetailDto> getOrders(Long userId) {
+        return orderRepository.findAllByUserId(userId)
                 .flatMap(order -> itemDao
                         .getOrderItems(order.getId())
                         .collectList()
@@ -48,13 +48,13 @@ public class OrderService {
     }
 
     @Transactional
-    public Mono<Long> buy() {
-        return cartService.getCartItems()
+    public Mono<Long> buy(Long userId) {
+        return cartService.getCartItems(userId)
                 .flatMap(items -> {
                     if (items.isEmpty()) {
                         return Mono.error(new IllegalArgumentException("Корзина пуста"));
                     }
-                    return saveOrder(items)
+                    return saveOrder(items, userId)
                             .flatMap(order -> saveOrderItems(items, order))
                             .flatMap(this::chargeBalance)
                             .flatMap(newOrderId -> cartService.clearCart()
@@ -73,11 +73,12 @@ public class OrderService {
         return orderItemRepository.saveAll(orderItemList).then(Mono.just(order));
     }
 
-    private Mono<Order> saveOrder(List<ItemFullDto> itemFullDtoList) {
+    private Mono<Order> saveOrder(List<ItemFullDto> itemFullDtoList, Long userId) {
         Order newOrder = new Order();
         long totalSum = itemFullDtoList.stream().mapToLong(
                 itemDto -> itemDto.getPrice() * itemDto.getCount()
         ).sum();
+        newOrder.setUserId(userId);
         newOrder.setTotalSum(totalSum);
 
         return orderRepository.save(newOrder);

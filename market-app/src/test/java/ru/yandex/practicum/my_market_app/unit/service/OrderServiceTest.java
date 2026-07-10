@@ -56,10 +56,10 @@ class OrderServiceTest {
 
         List<OrderItemDto> orderItemsList = List.of(orderItemDto);
 
-        when(orderRepository.findById(1L)).thenReturn(Mono.just(order));
+        when(orderRepository.findOrderByIdAndUserId(1L, 1L)).thenReturn(Mono.just(order));
         when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItemsList));
 
-        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L).block();
+        OrderDetailDto orderDetailDto = orderService.getOrderDetail(1L, 1L).block();
 
         assertEquals(order.getId(), orderDetailDto.id());
         assertEquals(order.getTotalSum(), orderDetailDto.totalSum());
@@ -81,11 +81,11 @@ class OrderServiceTest {
                 Order.builder().id(2L).totalSum(10L).build()
         );
 
-        when(orderRepository.findAll()).thenReturn(Flux.fromIterable(orders));
+        when(orderRepository.findAllByUserId(1L)).thenReturn(Flux.fromIterable(orders));
         when(itemDao.getOrderItems(1L)).thenReturn(Flux.fromIterable(orderItems1));
         when(itemDao.getOrderItems(2L)).thenReturn(Flux.fromIterable(orderItems2));
 
-        List<OrderDetailDto> orderDetailDtos = orderService.getOrders().collectList().block();
+        List<OrderDetailDto> orderDetailDtos = orderService.getOrders(1L).collectList().block();
 
         assertEquals(orders.size(), orderDetailDtos.size());
         assertEquals(orders.getLast().getTotalSum(), orderDetailDtos.getLast().totalSum());
@@ -102,13 +102,13 @@ class OrderServiceTest {
                 new ItemFullDto(3L, "item3", "", "", 7L, 1)
         );
 
-        when(cartService.getCartItems()).thenReturn(Mono.just(cartItems));
+        when(cartService.getCartItems(1L)).thenReturn(Mono.just(cartItems));
         when(orderRepository.save(newOrder)).thenReturn(Mono.just(savedOrder));
         when(orderItemRepository.saveAll(anyCollection())).thenReturn(Flux.empty());
         when(paymentService.chargeOrderBalance(1L, 10L)).thenReturn(Mono.just(1L));
         when(cartService.clearCart()).thenReturn(Mono.empty());
 
-        Long newId = orderService.buy().block();
+        Long newId = orderService.buy(1L).block();
 
         verify(orderRepository).save(newOrder);
         verify(orderItemRepository).saveAll(anyCollection());

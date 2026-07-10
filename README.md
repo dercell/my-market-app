@@ -53,11 +53,14 @@ docker build -f ./market-app/Dockerfile -t market-app:latest .
 * `REDIS_HOST=host.docker.internal` - хост для подключения к Redis
 * `REDIS_PORT=6379` - порт для подключения к Redis
 * `PAYMENT_SERVICE_URL=http://host.docker.internal:8090` - URL для взаимодействия с сервисом оплаты
+* `KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/market-app` - корневой адрес реалма в Keycloak
+* `KEYCLOAK_CLIENT_SECRET=G8eG1ctvsrarlmgmmOtuaVlo85ey0T7k` - secret клиента приложения
 
-Для сервиса оплаты также предусмотрен файл со свойствами
+* Для сервиса оплаты также предусмотрен файл со свойствами
 
 * `SERVICE_PORT=8090` - порт сервиса
 * `BALANCE=50000` - баланс на счете
+* `KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/market-app` - корневой адрес реалма в Keycloak
 
 #### Полное развертывание
 
@@ -80,6 +83,16 @@ docker run --rm -p 8090:8090 --env-file ./payment-service/.env payment-service:l
 # запуск основного приложения
 docker run --rm -p 8080:8080 --env-file ./market-app/.localEnv market-app:latest
 ```
+
+#### Keycloak
+
+В рамках полного развертываения в репозитории проекта находятся экспортиованные файлы realm и пользователей.
+Существующие пользователи представлены ниже.
+
+| Login | Password | 
+|:------|:---------| 
+| luke  | luke     | 
+| han   | han      | 
 
 ### Тестирование
 
@@ -124,7 +137,8 @@ mvnw.cmd clean test -Dgroups=service
 #### Примечания
 
 Помимо основных тестов в прилоежнии Payment Service существует SwaggerUI, позволяющий взаимодействите с сервисом
-платежей без использования витрины магазина. Данная спецификация сгенерирована на основе OpenAPI схемы в [api-spec](api-spec).
+платежей без использования витрины магазина. Данная спецификация сгенерирована на основе OpenAPI схемы
+в [api-spec](api-spec).
 
 Сам интерфейс доступен по адресу
 

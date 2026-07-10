@@ -14,6 +14,12 @@
 package ru.yandex.practicum.my_market_app.api.config;
 
 import io.netty.channel.ChannelOption;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import reactor.netty.http.client.HttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,9 +37,27 @@ public class PaymentApiClientConfig {
     @Value("${payment-service.base-url:http://localhost:8090}")
     private String baseUrl;
 
+    @Bean
+    public ReactiveOAuth2AuthorizedClientManager auth2AuthorizedClientManager(ReactiveClientRegistrationRepository clientRegistrations,
+                                                                              ServerOAuth2AuthorizedClientRepository authorizedClients) {
+        var authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
+                .clientCredentials()
+                .build();
+
+        var authorizedClientManager = new DefaultReactiveOAuth2AuthorizedClientManager(
+                clientRegistrations,
+                authorizedClients);
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+        return authorizedClientManager;
+    }
+
 
     @Bean
-    public WebClient getWebClient() {
+    public WebClient getWebClient(ReactiveOAuth2AuthorizedClientManager auth2AuthorizedClientManager) {
+
+        var oauth2Client = new ServerOAuth2AuthorizedClientExchangeFilterFunction(auth2AuthorizedClientManager);
+        oauth2Client.setDefaultClientRegistrationId("b2b");
+
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3_000)
                 .responseTimeout(Duration.ofSeconds(3));
@@ -41,6 +65,7 @@ public class PaymentApiClientConfig {
         return WebClient.builder()
                 .baseUrl(this.baseUrl)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .filter(oauth2Client)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();

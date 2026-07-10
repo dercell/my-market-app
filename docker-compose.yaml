@@ -1,5 +1,22 @@
 version: '3.8'
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.3
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   db:
     image: mysql:oraclelinux9
     container_name: market-db
@@ -36,7 +53,7 @@ services:
       context: .
       dockerfile: ./market-app/Dockerfile
     ports:
-      - "8080:8080"
+      - "8081:8080"
     env_file:
       - ./market-app/.env
   payment-service:

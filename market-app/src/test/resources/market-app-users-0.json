@@ -1,0 +1,87 @@
+{
+  "realm" : "market-app",
+  "users" : [ {
+    "id" : "4da040a8-04aa-4a0a-abd7-63c16d0d15bf",
+    "username" : "han",
+    "firstName" : "Han",
+    "lastName" : "Solo",
+    "email" : "solo@example.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1782063048010,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "18dcd083-d1dc-41cd-a905-2e699f7bc5a2",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1782063059912,
+      "secretData" : "{\"value\":\"LLDGOu5gXuvGbpzv7iMZtMgdjAm82qIn0fTU8NZnaoI=\",\"salt\":\"r81aldELDcCfelY5lAhI5w==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-market-app" ],
+    "notBefore" : 1782063470,
+    "groups" : [ ]
+  }, {
+    "id" : "9a03d803-5bca-4611-878e-54f9e5fc683d",
+    "username" : "luke",
+    "firstName" : "Luke",
+    "lastName" : "Skywalker",
+    "email" : "luke@example.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1781952350486,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "7c6cea6b-e2fb-47c5-8576-84eea74de8d0",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1781954037733,
+      "secretData" : "{\"value\":\"fUa8/x2roJdlS72XcwLzHi/1NQGFuOU5HEGPW9W9OK8=\",\"salt\":\"9xECrGl+Kz1o8krtVXIiaw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-market-app" ],
+    "notBefore" : 1782069430,
+    "groups" : [ ]
+  }, {
+    "id" : "c67cebba-df67-442f-8012-b1e77513e402",
+    "username" : "marketadmin",
+    "firstName" : "admin",
+    "lastName" : "admin",
+    "email" : "admin@example.com",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1781891172518,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "36403ae0-3d05-4bc8-8476-16e3fa5dbb03",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1781891185468,
+      "secretData" : "{\"value\":\"MbGL2tfzokzS0O78xHxw6JI4/lqEqSlQtQDfwGNYAHw=\",\"salt\":\"DBwPpzlpypiCfnWLJYwVqw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-market-app" ],
+    "notBefore" : 1781951406,
+    "groups" : [ ]
+  }, {
+    "id" : "e5b67001-e65a-436a-afe1-2f110373ee15",
+    "username" : "service-account-market-app",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1781812545593,
+    "totp" : false,
+    "serviceAccountClientId" : "market-app",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-market-app", "SERVICE" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

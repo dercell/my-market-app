@@ -35,21 +35,29 @@ class CartServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        databaseClient.sql("delete from cart").fetch().first().block();
-        databaseClient.sql("insert into cart(id, item_id, count) values (1,1,1), (2,2,2)").fetch().first().block();
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/init_users.sql"))
+        ).block();
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/init_cart.sql"))
+        ).block();
     }
 
     @AfterEach
     void clearUp() {
-        databaseClient.sql("delete from cart").fetch().first().block();
-        databaseClient.sql("alter table cart auto_increment = 1").fetch().first().block();
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/reset_cart.sql"))
+        ).block();
+        databaseClient.inConnection(connection -> ScriptUtils
+                .executeSqlScript(connection, new ClassPathResource("db/scripts/reset_users.sql"))
+        ).block();
         databaseClient.inConnection(connection -> ScriptUtils
                 .executeSqlScript(connection, new ClassPathResource("db/scripts/clear_orders.sql"))).block();
     }
 
     @Test
     void getCart() {
-        CartPageDto cartPageDto = cartService.getCart().block();
+        CartPageDto cartPageDto = cartService.getCart(1L).block();
 
         assertEquals(2, cartPageDto.itemsList().size());
         assertEquals(27000L, cartPageDto.totalSum());
@@ -58,15 +66,15 @@ class CartServiceIntegrationTest {
     @ParameterizedTest
     @CsvSource({"2,PLUS,38000", "1,MINUS,22000", "2,DELETE,5000"})
     void changeItemAmount(Long itemId, String action, Long totalSum) {
-        cartService.changeItemAmount(itemId, action).block();
-        CartPageDto cartPageDto = cartService.getCart().block();
+        cartService.changeItemAmount(itemId, action, 1L).block();
+        CartPageDto cartPageDto = cartService.getCart(1L).block();
 
         assertEquals(totalSum, cartPageDto.totalSum());
     }
 
     @Test
     void getCartItemByItemId() {
-        CartItem result = cartService.getCartItemByItemId(1L).block();
+        CartItem result = cartService.getCartItemByItemIdAndUserId(1L, 1L).block();
 
         assertEquals(1L, result.getItemId());
         assertEquals(1, result.getCount());
@@ -76,7 +84,7 @@ class CartServiceIntegrationTest {
     void getCartItemsByIdList() {
         List<Long> itemIds = List.of(1L, 2L);
 
-        List<CartItem> result = cartService.getCartItemsByIdList(itemIds).collectList().block();
+        List<CartItem> result = cartService.getCartItemsByIdList(itemIds, 1L).collectList().block();
 
         assertEquals(2, result.size());
     }

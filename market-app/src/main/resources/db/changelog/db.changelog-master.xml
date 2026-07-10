@@ -15,4 +15,15 @@
     <include file="009-cart-item-id-unique.xml" relativeToChangelogFile="true"/>
     <include file="010-order-delete-status-col.xml" relativeToChangelogFile="true"/>
     <include file="011-init-item-data.xml" relativeToChangelogFile="true"/>
+    <include file="012-users-table.xml" relativeToChangelogFile="true"/>
+    <include file="013-add-user-into-cart.xml" relativeToChangelogFile="true"/>
+    <include file="014-add-user-into-order.xml" relativeToChangelogFile="true"/>
+    <include file="015-users-cart-foreign-keys.xml" relativeToChangelogFile="true"/>
+    <include file="016-users-order-foreign-keys.xml" relativeToChangelogFile="true"/>
+    <include file="017-drop-cart-items-fk.xml" relativeToChangelogFile="true"/>
+    <include file="018-drop-cart-item-id-unique.xml" relativeToChangelogFile="true"/>
+    <include file="019-new-cart-item-id-unique.xml" relativeToChangelogFile="true"/>
+    <include file="020-cart-items-fk.xml" relativeToChangelogFile="true"/>
+    <include file="021-users-login-unique.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

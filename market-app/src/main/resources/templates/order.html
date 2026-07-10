@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 
 <head>
     <meta charset="utf-8">
@@ -21,9 +21,31 @@
                 <h2>
                     <span class="badge text-bg-success">Витрина магазина</span>
                 </h2>
-                <a href="/orders" class="btn btn-secondary ms-auto bi bi-file-earmark-text"> Заказы</a>
-                <a href="/cart/items" class="btn btn-secondary bi bi-cart4"> Корзина</a>
-                <a href="/items" class="btn btn-secondary bi bi-arrow-left-square"> Главная</a>
+                <div class="d-flex ms-auto" sec:authorize="isAuthenticated()">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Меню
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item"><span sec:authentication="name">Пользователь</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a href="/orders"
+                                   class="dropdown-item btn btn-secondary ms-auto bi bi-file-earmark-text"> Заказы</a>
+                            </li>
+                            <li><a href="/cart/items" class="dropdown-item btn btn-secondary bi bi-cart4"> Корзина</a>
+                            </li>
+                            <li><a href="/items" class="dropdown-item btn btn-secondary bi bi-arrow-left-square"> Главная</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item btn btn-secondary bi bi-box-arrow-in-left" th:href="@{/logout}">
+                                Выйти</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
